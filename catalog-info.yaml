@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: bimorph-mirror-analysis
+  title: bimorph-mirror-analysis
+  description: package to calibrate bimorph mirrors to focus a beamline to a target position
+spec:
+  type: documentation
+  lifecycle: experimental
+  owner: vbz18877
