@@ -1,9 +1,8 @@
 # Changes here will be overwritten by Copier
-_commit: 1.0.0
+_commit: 2.6.0
 _src_path: gh:DiamondLightSource/python-copier-template
 author_email: luke.fiddy@diamond.ac.uk
 author_name: Luke Fiddy
-component_owner: vbz18877
 description: package to calibrate bimorph mirrors to focus a beamline to a target
     position
 distribution_name: bimorph-mirror-analysis
@@ -12,4 +11,6 @@ docs_type: README
 git_platform: github.com
 github_org: ''
 package_name: bimorph_mirror_analysis
+pypi: false
 repo_name: bimorph-mirror-analysis
+type_checker: pyright
