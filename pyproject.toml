@@ -12,7 +12,9 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 description = "package to calibrate bimorph mirrors to focus a beamline to a target position"
-dependencies = [] # Add project dependencies here, e.g. ["click", "numpy"]
+dependencies = [
+    "numpy",
+] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.md"
@@ -47,7 +49,7 @@ version_file = "src/bimorph_mirror_analysis/_version.py"
 
 [tool.pyright]
 typeCheckingMode = "standard"
-reportMissingImports = false # Ignore missing stubs in imported modules
+reportMissingImports = false  # Ignore missing stubs in imported modules
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
