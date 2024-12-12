@@ -48,7 +48,7 @@ name = "Luke Fiddy"
 version_file = "src/bimorph_mirror_analysis/_version.py"
 
 [tool.pyright]
-typeCheckingMode = "standard"
+typeCheckingMode = "strict"
 reportMissingImports = false  # Ignore missing stubs in imported modules
 
 [tool.pytest.ini_options]
