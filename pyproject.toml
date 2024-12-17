@@ -15,6 +15,7 @@ description = "package to calibrate bimorph mirrors to focus a beamline to a tar
 dependencies = [
     "numpy",
     "pandas",
+    "pandas-stubs",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
