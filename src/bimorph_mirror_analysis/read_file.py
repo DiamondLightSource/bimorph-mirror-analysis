@@ -31,7 +31,7 @@ def read_bluesky_plan_output(
         values="centroid_position_x",
         index=["slit_position_x"],
         columns=["pencil_beam_scan_number"],
-    )  # .add_prefix('pencil_beam_scan_').reset_index()
+    )
     pivoted.columns = ["pencil_beam_scan_" + str(col) for col in pivoted.columns]
     pivoted.reset_index(inplace=True)
     return pivoted, initial_voltages, voltage_increment  # type: ignore
