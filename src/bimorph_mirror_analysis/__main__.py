@@ -1,5 +1,6 @@
 """Interface for ``python -m bimorph_mirror_analysis``."""
 
+import datetime
 from argparse import ArgumentParser
 from collections.abc import Sequence
 
@@ -29,8 +30,19 @@ def main(args: Sequence[str] | None = None) -> None:
     )
     a = parser.parse_args(args)
     file_path = a.file_path
+    file_type = a.file_path.split(".")[-1]
     optimal_voltages = calculate_optimal_voltages(file_path)
-    print(f"The optimal voltages are: {optimal_voltages}")
+    optimal_voltages = np.round(optimal_voltages, 2)
+    date = datetime.datetime.now().date()
+    np.savetxt(
+        f"{a.file_path.replace(f'.{file_type}', '')}_optimal_voltages_{date}.csv",
+        optimal_voltages,
+        fmt="%.2f",
+    )
+    print(f"{a.file_path.replace(f'.{file_type}', '')}_optimal_voltages_{date}.csv")
+    print(
+        f"The optimal voltages are: [{', '.join([str(i) for i in optimal_voltages])}]"
+    )
 
 
 # implement this into main
