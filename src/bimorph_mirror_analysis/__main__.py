@@ -40,6 +40,10 @@ def main(args: Sequence[str] | None = None) -> None:
         fmt="%.2f",
     )
     print(
+        f"The optimal voltages have been saved to \
+{a.file_path.replace(f'.{file_type}', '')}_optimal_voltages_{date}.csv"
+    )
+    print(
         f"The optimal voltages are: [{', '.join([str(i) for i in optimal_voltages])}]"
     )
 
