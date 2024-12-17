@@ -3,8 +3,6 @@ import pytest
 
 from bimorph_mirror_analysis.maths import find_voltages
 
-# from bimorph_mirror_analysis.maths import find_voltages
-
 
 @pytest.mark.parametrize(
     ["input_path", "output_path"],
