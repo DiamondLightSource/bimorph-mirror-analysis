@@ -34,7 +34,6 @@ dev = [
     "ruff",
     "tox-direct",
     "types-mock",
-    "unitest",
 ]
 
 [project.scripts]
