@@ -114,7 +114,7 @@ def raw_data() -> pd.DataFrame:
         [row.split(",") for row in data.split("\n")[1:]],
         columns=data.split("\n")[0].split(","),
     )  # type: ignore
-    return df.apply(pd.to_numeric, errors="coerce")
+    return df.apply(pd.to_numeric, errors="coerce")  # type: ignore
 
 
 @pytest.fixture
@@ -146,4 +146,4 @@ def raw_data_pivoted() -> pd.DataFrame:
         [row.split(",") for row in data.split("\n")[1:]],
         columns=data.split("\n")[0].split(","),
     )  # type: ignore
-    return df.apply(pd.to_numeric, errors="coerce")
+    return df.apply(pd.to_numeric, errors="coerce")  # type: ignore
