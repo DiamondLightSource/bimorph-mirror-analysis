@@ -19,9 +19,10 @@ def test_app():
         ) as mock_calculate_optimal_voltages,
     ):
         mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
-        runner.invoke(app, ["calculate-voltages", "tests/data/raw_data.csv"])
+        result = runner.invoke(app, ["calculate-voltages", "tests/data/raw_data.csv"])
         mock_np_save.assert_called_once()
         mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
 def test_cli_version():
