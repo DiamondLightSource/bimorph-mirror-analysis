@@ -9,7 +9,9 @@ def test_cli_version():
         sys.executable,
         "-m",
         "bimorph_mirror_analysis",
-        "tests/data/raw_data.csv",
         "--version",
     ]
-    assert subprocess.check_output(cmd).decode().strip() == __version__
+    assert (
+        subprocess.check_output(cmd).decode().strip("Version: ").strip("\n")
+        == __version__
+    )
