@@ -2,6 +2,7 @@ import subprocess
 import sys
 from unittest.mock import patch
 
+import numpy as np
 from typer.testing import CliRunner
 
 from bimorph_mirror_analysis import __version__
@@ -11,10 +12,16 @@ runner = CliRunner()
 
 
 def test_app():
-    with patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save:
+    with (
+        patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
+        patch(
+            "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
+        ) as mock_calculate_optimal_voltages,
+    ):
+        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
         runner.invoke(app, ["calculate-voltages", "tests/data/raw_data.csv"])
         mock_np_save.assert_called_once()
-        runner.invoke(app, ["calculate-voltages", "tests/data/raw_data.csv"])
+        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
 
 
 def test_cli_version():
