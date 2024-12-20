@@ -1,10 +1,9 @@
 """Interface for ``python -m bimorph_mirror_analysis``."""
 
 import datetime
-from argparse import ArgumentParser
-from collections.abc import Sequence
 
 import numpy as np
+import typer
 
 from bimorph_mirror_analysis.maths import find_voltages
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
@@ -13,37 +12,25 @@ from . import __version__
 
 __all__ = ["main"]
 
+app = typer.Typer()
 
-def main(args: Sequence[str] | None = None) -> None:
-    """Argument parser for the CLI."""
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version=__version__,
-    )
-    parser.add_argument(
-        "file_path",
-        type=str,
-        help="Path to the file containing the output of the Bluesky plan.",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="Path to save the optimal voltages.",
-    )
-    a = parser.parse_args(args)
-    file_path = a.file_path
-    file_type = a.file_path.split(".")[-1]
+
+@app.command(name=None)
+def calculate_voltages(
+    file_path: str = typer.Argument(help="The path to the csv file to be read."),
+    output_path: str | None = typer.Option(
+        None,
+        help="The path to save the output\
+optimal voltages to, optional.",
+    ),
+):
+    file_type = file_path.split(".")[-1]
     optimal_voltages = calculate_optimal_voltages(file_path)
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
-    if a.output:
-        output_path = a.output
-    else:
-        output_path = f"{a.file_path.replace(f'.{file_type}', '')}\
+
+    if output_path is None:
+        output_path = f"{file_path.replace(f'.{file_type}', '')}\
 _optimal_voltages_{date}.csv"
 
     np.savetxt(
@@ -57,7 +44,26 @@ _optimal_voltages_{date}.csv"
     )
 
 
-# implement this into main
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"Version: {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        "-v",
+        callback=version_callback,
+        is_eager=True,
+        help="Show the application's version and exit",
+    ),
+):
+    pass
+
+
 def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
     # numpy array of pencil beam scans
@@ -69,4 +75,4 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
 
 
 if __name__ == "__main__":
-    main()
+    app()
