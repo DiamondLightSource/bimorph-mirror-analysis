@@ -32,3 +32,4 @@ def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
         mock_find_voltages.assert_called()
         expected_data = raw_data_pivoted[raw_data_pivoted.columns[1:]].to_numpy()  # type: ignore
         np.testing.assert_array_equal(mock_find_voltages.call_args[0][0], expected_data)  # type: ignore
+        np.testing.assert_almost_equal(mock_find_voltages.call_args[0][1], 100)
