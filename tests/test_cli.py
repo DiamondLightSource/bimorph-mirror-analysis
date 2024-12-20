@@ -27,8 +27,7 @@ def test_app(outpath: str | bool):
         ) as mock_calculate_optimal_voltages,
     ):
         mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
-        if outpath is not False:
-            print("\n\n\n\n\n\n")
+        if type(outpath) is str:
             result = runner.invoke(
                 app,
                 [
@@ -38,7 +37,6 @@ def test_app(outpath: str | bool):
                     f"{outpath}",
                 ],
             )
-            print("aaa")
         elif not outpath:
             result = runner.invoke(
                 app, ["calculate-voltages", "tests/data/raw_data.csv"]
