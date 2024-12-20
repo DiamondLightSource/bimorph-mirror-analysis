@@ -33,7 +33,7 @@ def test_app(outpath: str | bool):
                 [
                     "calculate-voltages",
                     "tests/data/raw_data.csv",
-                    "--output_path",
+                    "--output-path",
                     f"{outpath}",
                 ],
             )
