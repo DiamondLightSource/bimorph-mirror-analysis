@@ -37,7 +37,7 @@ def test_app(outpath: str | bool):
                     f"{outpath}",
                 ],
             )
-        elif not outpath:
+        else:
             result = runner.invoke(
                 app, ["calculate-voltages", "tests/data/raw_data.csv"]
             )
