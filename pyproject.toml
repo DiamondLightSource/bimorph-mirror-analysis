@@ -37,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:main"
+bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:app"
 
 [project.urls]
 GitHub = "https://github.com//bimorph-mirror-analysis"
