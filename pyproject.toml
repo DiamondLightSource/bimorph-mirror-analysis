@@ -16,6 +16,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pandas-stubs",
+    "typer",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -36,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:main"
+bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:app"
 
 [project.urls]
 GitHub = "https://github.com//bimorph-mirror-analysis"
