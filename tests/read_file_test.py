@@ -11,7 +11,6 @@ def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
     with patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv:
         mock_read_csv.return_value = raw_data
         pivoted, initial_voltages, increment = read_bluesky_plan_output("input_path")
-        # expected_output = pd.read_csv(output_path)  # type: ignore
         pd.testing.assert_frame_equal(pivoted, raw_data_pivoted)
         np.testing.assert_array_equal(initial_voltages, np.array([0.0, 0.0, 0.0]))
         np.testing.assert_equal(increment, np.float64(100.0))
