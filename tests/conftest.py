@@ -1,6 +1,7 @@
 import os
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -147,3 +148,13 @@ def raw_data_pivoted() -> pd.DataFrame:
         columns=data.split("\n")[0].split(","),
     )  # type: ignore
     return df.apply(pd.to_numeric, errors="coerce")  # type: ignore
+
+
+@pytest.fixture
+def actuator_data(
+    request: tuple[str, str],
+) -> tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]]:
+    input_path, output_path = request.param
+    data = np.loadtxt(input_path, delimiter=",")
+    expected_output = np.loadtxt(output_path, delimiter=",")
+    return data, expected_output

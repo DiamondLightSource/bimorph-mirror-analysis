@@ -5,16 +5,18 @@ from bimorph_mirror_analysis.maths import find_voltages
 
 
 @pytest.mark.parametrize(
-    ["input_path", "output_path"],
+    "actuator_data",
     [
         ["tests/data/8_actuator_data.txt", "tests/data/8_actuator_output.txt"],
         ["tests/data/16_actuator_data.txt", "tests/data/16_actuator_output.txt"],
     ],
+    indirect=True,
 )
-def test_find_voltages_correct_output(input_path: str, output_path: str):
-    data = np.loadtxt(input_path, delimiter=",")
+def test_find_voltages_correct_output(
+    actuator_data: tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]],
+):
+    data, expected_output = actuator_data
     v = -100
-    expected_output = np.loadtxt(output_path, delimiter=",")
     np.testing.assert_almost_equal(
         find_voltages(data, v, baseline_voltage_scan=-1), expected_output
     )
