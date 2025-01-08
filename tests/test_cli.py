@@ -3,6 +3,7 @@ import sys
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 from typer.testing import CliRunner
 
@@ -19,7 +20,7 @@ runner = CliRunner()
         [False],
     ],
 )
-def test_app(outpath: str | bool):
+def test_outpath_option(outpath: str | bool):
     with (
         patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
         patch(
@@ -37,6 +38,42 @@ def test_app(outpath: str | bool):
                     f"{outpath}",
                 ],
             )
+        else:
+            result = runner.invoke(
+                app, ["calculate-voltages", "tests/data/raw_data.csv"]
+            )
+        mock_np_save.assert_called_once()
+        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ["human_readable"],
+    [
+        ["tests/data/out.csv"],
+        [False],
+    ],
+)
+def test_human_readable_option(human_readable: str | bool):
+    with (
+        patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
+        patch(
+            "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
+        ) as mock_calculate_optimal_voltages,
+        patch.object(pd.DataFrame, "to_csv") as mock_to_csv,
+    ):
+        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+        if type(human_readable) is str:
+            result = runner.invoke(
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "--human-readable",
+                    f"{human_readable}",
+                ],
+            )
+            mock_to_csv.assert_called_once()
         else:
             result = runner.invoke(
                 app, ["calculate-voltages", "tests/data/raw_data.csv"]
