@@ -152,7 +152,7 @@ def raw_data_pivoted() -> pd.DataFrame:
 
 @pytest.fixture
 def actuator_data(
-    request: tuple[str, str],
+    request: pytest.FixtureRequest,
 ) -> tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]]:
     input_path, output_path = request.param
     data = np.loadtxt(input_path, delimiter=",")
