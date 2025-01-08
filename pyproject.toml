@@ -14,6 +14,9 @@ classifiers = [
 description = "package to calibrate bimorph mirrors to focus a beamline to a target position"
 dependencies = [
     "numpy",
+    "pandas",
+    "pandas-stubs",
+    "typer",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -34,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:main"
+bimorph-mirror-analysis = "bimorph_mirror_analysis.__main__:app"
 
 [project.urls]
 GitHub = "https://github.com//bimorph-mirror-analysis"
@@ -49,7 +52,7 @@ version_file = "src/bimorph_mirror_analysis/_version.py"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-reportMissingImports = false  # Ignore missing stubs in imported modules
+reportMissingImports = false # Ignore missing stubs in imported modules
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
