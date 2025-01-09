@@ -33,6 +33,7 @@ optimal voltages to, optional.",
     if human_readable is not None:
         pivoted, *_ = read_bluesky_plan_output(file_path)
         pivoted.to_csv(human_readable)
+        print(f"The human-readable file has been written to {human_readable}")
 
     optimal_voltages = calculate_optimal_voltages(file_path)
     optimal_voltages = np.round(optimal_voltages, 2)
