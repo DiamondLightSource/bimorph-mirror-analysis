@@ -32,7 +32,6 @@ optimal voltages to, optional.",
     file_type = file_path.split(".")[-1]
     if human_readable is not None:
         pivoted, *_ = read_bluesky_plan_output(file_path)
-        print("1")
         pivoted.to_csv(human_readable)
 
     optimal_voltages = calculate_optimal_voltages(file_path)

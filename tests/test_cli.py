@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -60,9 +60,16 @@ def test_human_readable_option(human_readable: str | bool):
         patch(
             "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
         ) as mock_calculate_optimal_voltages,
+        patch(
+            "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
+        ) as mock_read_bluesky_plan_output,
         patch.object(pd.DataFrame, "to_csv") as mock_to_csv,
     ):
+        # Create a mock DataFrame
+        mock_pivoted = MagicMock(spec=pd.DataFrame)
+        mock_read_bluesky_plan_output.return_value = (mock_pivoted,)
         mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+
         if type(human_readable) is str:
             result = runner.invoke(
                 app,
