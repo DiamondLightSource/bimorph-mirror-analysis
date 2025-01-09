@@ -63,7 +63,6 @@ def test_human_readable_option(human_readable: str | bool):
         patch(
             "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
         ) as mock_read_bluesky_plan_output,
-        patch.object(pd.DataFrame, "to_csv") as mock_to_csv,
     ):
         # Create a mock DataFrame
         mock_pivoted = MagicMock(spec=pd.DataFrame)
@@ -80,7 +79,7 @@ def test_human_readable_option(human_readable: str | bool):
                     f"{human_readable}",
                 ],
             )
-            mock_to_csv.assert_called_once()
+            mock_pivoted.to_csv.assert_called_once()
         else:
             result = runner.invoke(
                 app, ["calculate-voltages", "tests/data/raw_data.csv"]
