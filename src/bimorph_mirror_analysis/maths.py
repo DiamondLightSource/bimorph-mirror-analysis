@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def find_voltages(
+def find_voltage_corrections(
     data: np.typing.NDArray[np.float64],
     v: float,
     baseline_voltage_scan: int = 0,
