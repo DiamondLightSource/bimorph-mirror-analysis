@@ -1,4 +1,8 @@
+from collections.abc import Callable
+from typing import TypedDict
+
 import numpy as np
+from scipy.optimize import minimize
 
 
 def find_voltage_corrections(
@@ -53,3 +57,106 @@ def find_voltage_corrections(
     )  # calculate the voltage required to move the centroid to the target position
 
     return voltage_corrections[1:]  # return the voltages
+
+
+def objective_function(
+    voltages: np.typing.NDArray[np.float64],
+    coefficients: np.typing.NDArray[np.float64],
+    targets: np.typing.NDArray[np.float64],
+) -> float:
+    """Given a set of values for the voltages and their influence function coefficients
+    for each slit position, along with the set of target centroid adjustments, calulate
+    the sum of squared errors across all slit positions.
+
+    Args:
+        voltages: A list of values for the voltages
+        coefficients: A 2D array of coefficients for each voltage, where rows are the
+            slit positions and columns are the different actuators
+        targets: A list of target values for each equation (row in the coefficients
+            matrix)
+
+    Returns:
+        The sum of squared errors for the set of values of the voltages.
+
+
+    The code below outlines what the function does in a readabl (but slower) way:
+    sum = 0
+    for row_num in range(len(coefficients)):
+        f = np.sum([coefficients[row_num][i]*voltages[i] for i in range(len(voltages))])
+        f -= targets[row_num]
+        sum+=f**2
+
+    return sum
+    """
+    # assert the inputs are the correct shape
+    assert (
+        len(voltages) == coefficients.shape[1]
+    ), f"Number of voltages: {len(voltages)}, Number of coefficients: \
+{coefficients.shape[1]}\nThe number of voltages provided must match the number of\
+columns in the coefficients matrix"
+    assert coefficients.shape[0] == len(
+        targets
+    ), f"Number of coefficients: {coefficients.shape[0]},\
+    Number of target centroid positions: {len(targets)}\
+        \nThe number of rows in the coefficients matrix must match the number of target\
+centroid positions"
+
+    return np.sum((np.matmul(coefficients, voltages) - targets) ** 2)
+
+
+def find_voltage_corrections_with_restraints(
+    data: np.typing.NDArray[np.float64],
+    v: float,
+    baseline_voltage_scan: int = 0,
+) -> np.typing.NDArray[np.float64]:
+    if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
+        raise IndexError(
+            f"baseline_voltage_scan is out of range, it must be between\
+                  {-1*data.shape[1]} and {data.shape[1]-1}"
+        )
+
+    responses = np.diff(
+        data, axis=1
+    )  # calculate the response of each actuator by subtracting previous pencil beam
+
+    interation_matrix = responses / v  # response per unit charge
+    # add columns of 1's to the left of H
+    interation_matrix = np.hstack(
+        (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
+    )
+    baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
+
+    target = np.mean(baseline_voltage_beamline_positions)
+    Y = target - baseline_voltage_beamline_positions
+
+    # minimise the objective function
+
+    # set initial guess voltages to all 1s
+    initial_guess = np.ones(interation_matrix.shape[1])
+
+    bounds = [(-1000, 1000) for _ in range(interation_matrix.shape[1])]
+
+    class Constraint(TypedDict):
+        type: str
+        fun: Callable[[np.typing.NDArray[np.float64]], float]
+
+    # build list of contraints objects
+    constraints: list[Constraint] = []
+    for i in range(interation_matrix.shape[1] - 1):
+
+        def func(voltages: np.typing.NDArray[np.float64], i: int = i) -> float:
+            return 200 - abs(voltages[i] - voltages[i + 1])
+
+        constraints.append({"type": "ineq", "fun": func})
+
+    result = minimize(
+        objective_function,
+        initial_guess,
+        args=(interation_matrix, Y),
+        method="SLSQP",
+        bounds=bounds,
+        constraints=constraints,  # type: ignore
+        options={"maxiter": 3 * 10**5},
+    )
+
+    return result.x[1:]  # first item is constant term
