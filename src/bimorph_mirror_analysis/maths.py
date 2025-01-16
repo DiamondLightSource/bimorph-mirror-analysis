@@ -129,8 +129,6 @@ def find_voltage_corrections_with_restraints(
     target = np.mean(baseline_voltage_beamline_positions)
     Y = target - baseline_voltage_beamline_positions
 
-    # minimise the objective function
-
     # set initial guess voltages to all 1s
     initial_guess = np.ones(interation_matrix.shape[1])
 
@@ -148,7 +146,7 @@ def find_voltage_corrections_with_restraints(
             return 200 - abs(voltages[i] - voltages[i + 1])
 
         constraints.append({"type": "ineq", "fun": func})
-
+    # minimise the objective function
     result = minimize(
         objective_function,
         initial_guess,
