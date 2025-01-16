@@ -52,11 +52,11 @@ def find_voltage_corrections(
     target = np.mean(baseline_voltage_beamline_positions)
     Y = target - baseline_voltage_beamline_positions
 
-    voltage_corrections = np.matmul(
+    voltage_corrections: np.typing.NDArray[np.float64] = np.matmul(
         interation_matrix_inv, Y
     )  # calculate the voltage required to move the centroid to the target position
 
-    return voltage_corrections[1:]  # return the voltages
+    return np.round(voltage_corrections[1:], decimals=2)  # return the voltages
 
 
 def objective_function(
@@ -157,4 +157,4 @@ def find_voltage_corrections_with_restraints(
         options={"maxiter": 3 * 10**5},
     )
 
-    return result.x[1:]  # first item is constant term
+    return np.round(result.x[1:], decimals=2)  # first item is constant term
