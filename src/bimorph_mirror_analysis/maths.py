@@ -111,6 +111,28 @@ def find_voltage_corrections_with_restraints(
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
 ) -> np.typing.NDArray[np.float64]:
+    """Calculate voltage corrections to apply to bimorph.
+
+    Given a matrix of beamline centroid data, with columns of beamline scans at
+    different actuator voltages and rows of slit positions, calculate the necessary
+    voltages corrections to achive the target centroid position. Uses the SLSQP
+    algorithm to optimise the voltages.
+
+    Args:
+        data: A matrix of beamline centroid data, with rows of different slit positions
+            and columns of pencil beam scans at different actuator voltages
+        v: The voltage increment applied to the actuators between pencil beam scans
+        voltage_range: The minimum and maximum values a voltage can take.
+        max_consecutive_voltage_difference: The maximum voltage difference between two
+            consecutive actuators on the bimorph mirror.
+        baseline_voltage_scan: The pencil beam scan to use as the baseline for the
+            centroid calculation. 0 is the first scan, 1 is the second scan, etc.
+            -1 can be used for the last scan and -2 for the second to last scan etc.
+
+    Returns:
+        An array of voltage corrections required to move the centroid of each pencil
+        beam scan to the target position.
+    """
     if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
         raise IndexError(
             f"baseline_voltage_scan is out of range, it must be between\
