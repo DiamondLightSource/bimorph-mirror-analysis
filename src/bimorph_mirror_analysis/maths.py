@@ -107,6 +107,8 @@ centroid positions"
 def find_voltage_corrections_with_restraints(
     data: np.typing.NDArray[np.float64],
     v: float,
+    voltage_range: tuple[int, int],
+    max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
 ) -> np.typing.NDArray[np.float64]:
     if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
@@ -132,7 +134,7 @@ def find_voltage_corrections_with_restraints(
     # set initial guess voltages to all 1s
     initial_guess = np.ones(interation_matrix.shape[1])
 
-    bounds = [(-1000, 1000) for _ in range(interation_matrix.shape[1])]
+    bounds = [voltage_range for _ in range(interation_matrix.shape[1])]
 
     class Constraint(TypedDict):
         type: str
@@ -142,8 +144,12 @@ def find_voltage_corrections_with_restraints(
     constraints: list[Constraint] = []
     for i in range(interation_matrix.shape[1] - 1):
 
-        def func(voltages: np.typing.NDArray[np.float64], i: int = i) -> float:
-            return 200 - abs(voltages[i] - voltages[i + 1])
+        def func(
+            voltages: np.typing.NDArray[np.float64],
+            max_diff: int = max_consecutive_voltage_difference,
+            idx: int = i,
+        ) -> float:
+            return max_diff - abs(voltages[idx] - voltages[idx + 1])
 
         constraints.append({"type": "ineq", "fun": func})
     # minimise the objective function
@@ -157,4 +163,4 @@ def find_voltage_corrections_with_restraints(
         options={"maxiter": 3 * 10**5},
     )
 
-    return np.round(result.x[1:], decimals=2)  # first item is constant term
+    return np.round(result.x[1:], decimals=2)  # first item is not a voltage
