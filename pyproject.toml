@@ -20,6 +20,7 @@ dependencies = [
     "scipy",
     "scipy-stubs",
     "plotly",
+    "dash",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
