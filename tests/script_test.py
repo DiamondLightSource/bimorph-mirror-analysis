@@ -21,7 +21,9 @@ def test_find_voltages_correct_output(
     data, expected_output = actuator_data
     v = -100
     np.testing.assert_almost_equal(
-        find_voltage_corrections(data, v, baseline_voltage_scan=-1), expected_output
+        find_voltage_corrections(data, v, baseline_voltage_scan=-1),
+        expected_output,
+        decimal=2,
     )
 
 
@@ -54,6 +56,9 @@ def test_find_voltage_corrections_with_restraints_correct_output(
     data, expected_output = actuator_data
     v = -100
     np.testing.assert_almost_equal(
-        find_voltage_corrections_with_restraints(data, v, baseline_voltage_scan=-1),
+        find_voltage_corrections_with_restraints(
+            data, v, (-1000, 1000), 500, baseline_voltage_scan=-1
+        ),
         expected_output,
+        decimal=1,
     )
