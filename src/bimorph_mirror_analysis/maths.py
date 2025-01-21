@@ -32,7 +32,7 @@ def find_voltage_corrections(
     if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
         raise IndexError(
             f"baseline_voltage_scan is out of range, it must be between\
-                  {-1*data.shape[1]} and {data.shape[1]-1}"
+                  {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
     responses = np.diff(
@@ -89,17 +89,17 @@ def objective_function(
     return sum
     """
     # assert the inputs are the correct shape
-    assert (
-        len(voltages) == coefficients.shape[1]
-    ), f"Number of voltages: {len(voltages)}, Number of coefficients: \
+    assert len(voltages) == coefficients.shape[1], (
+        f"Number of voltages: {len(voltages)}, Number of coefficients: \
 {coefficients.shape[1]}\nThe number of voltages provided must match the number of\
 columns in the coefficients matrix"
-    assert coefficients.shape[0] == len(
-        targets
-    ), f"Number of coefficients: {coefficients.shape[0]},\
+    )
+    assert coefficients.shape[0] == len(targets), (
+        f"Number of coefficients: {coefficients.shape[0]},\
     Number of target centroid positions: {len(targets)}\
         \nThe number of rows in the coefficients matrix must match the number of target\
 centroid positions"
+    )
 
     return np.sum((np.matmul(coefficients, voltages) - targets) ** 2)
 
@@ -136,7 +136,7 @@ def find_voltage_corrections_with_restraints(
     if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
         raise IndexError(
             f"baseline_voltage_scan is out of range, it must be between\
-                  {-1*data.shape[1]} and {data.shape[1]-1}"
+                  {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
     responses = np.diff(
