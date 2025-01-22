@@ -1,111 +1,94 @@
-"""import datetime
+import base64
+import datetime
 import io
 
-import dash
+import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
-from dash import dcc, html
+from dash import Dash, Input, Output, State, callback, dash_table, dcc, html
 from dash.dependencies import Input, Output, State
 
 from bimorph_mirror_analysis.maths import find_voltage_corrections
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
 
-app = dash.Dash(__name__)
+external_stylesheets = [
+    "https://codepen.io/chriddyp/pen/bWLwgP.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+]
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(
-    [
-        html.H1("Bimorph Mirror Analysis"),
+    children=[
+        html.H1("Bimorph Mirror Analysis", style={"textAlign": "center"}),
         dcc.Upload(
+            html.Button("Upload File"),
             id="upload-data",
-            children=html.Div(["Drag and Drop or ", html.A("Select Files")]),
             style={
-                "width": "100%",
-                "height": "60px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
+                # "width": "60%",
+                # "height": "60px",
+                # "lineHeight": "60px",
+                # "borderWidth": "1px",
+                # "borderStyle": "dashed",
+                # "borderRadius": "5px",
                 "textAlign": "center",
                 "margin": "10px",
+                "margin-left": "auto",
+                "margin-right": "auto",
             },
-            multiple=False,
+            # Allow multiple files to be uploaded
+            multiple=True,
         ),
-        html.Div(id="output-data-upload"),
-        html.Button("Calculate Voltages", id="calculate-button", n_clicks=0),
-        html.Div(id="output-voltage"),
-    ]
+        html.Button(
+            "Calculate Voltages",
+            id="calculate-button",
+            n_clicks=0,
+            style={
+                "display": "block",
+                "margin": "auto",
+            },
+        ),
+        html.Div(
+            id="output-data-upload", style={"margin": "auto", "margin-top": "20px"}
+        ),
+    ],
+    style={},
 )
 
+uploaded_data = {}
 
-def parse_contents(contents, filename):
+
+def parse_input(contents, filename):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
-    try:
-        if "csv" in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-            return df
-        else:
-            return None
-    except Exception as e:
-        print(e)
-        return None
+    if "csv" in filename:
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+        # Store the dataframe in the global variable
+        uploaded_data[filename] = df
+        return html.Div(
+            [
+                html.I(className="fas fa-file-csv"),  # Icon for CSV file
+                html.Span(f" {filename}"),
+            ]
+        )
+    else:
+        return html.Div(
+            [
+                html.I(className="fas fa-file"),  # Generic file icon
+                html.Span(f" {filename}"),
+            ]
+        )
 
 
-@app.callback(
+@callback(
     Output("output-data-upload", "children"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
 )
-def update_output(contents, filename):
-    if contents is not None:
-        df = parse_contents(contents, filename)
-        if df is not None:
-            return html.Div(
-                [
-                    html.H5(filename),
-                    html.H6(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                    dcc.Graph(
-                        figure={
-                            "data": [
-                                {
-                                    "x": df[df.columns[0]],
-                                    "y": df[df.columns[1]],
-                                    "type": "line",
-                                    "name": filename,
-                                },
-                            ],
-                            "layout": {"title": "Uploaded Data"},
-                        }
-                    ),
-                ]
-            )
-        else:
-            return "There was an error processing the file."
-
-
-@app.callback(
-    Output("output-voltage", "children"),
-    Input("calculate-button", "n_clicks"),
-    State("upload-data", "contents"),
-    State("upload-data", "filename"),
-)
-def calculate_voltages(n_clicks, contents, filename):
-    if n_clicks > 0 and contents is not None:
-        df = parse_contents(contents, filename)
-        if df is not None:
-            file_path = filename
-            optimal_voltages = calculate_optimal_voltages(file_path)
-            optimal_voltages = np.round(optimal_voltages, 2)
-            date = datetime.datetime.now().date()
-            output_path = f"{file_path.replace('.csv', '')}_optimal_voltages_{date}.csv"
-            np.savetxt(output_path, optimal_voltages, fmt="%.2f")
-            return f"The optimal voltages have been saved to {output_path}. \
-The optimal voltages are: [{', '.join([str(i) for i in optimal_voltages])}]"
-        else:
-            return "There was an error processing the file."
-    return ""
+def update_output(list_of_contents, list_of_names):
+    if list_of_contents is not None:
+        children = [parse_input(c, n) for c, n in zip(list_of_contents, list_of_names)]
+        return children
 
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-"""
