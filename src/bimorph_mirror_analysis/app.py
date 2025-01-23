@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, callback, dash_table, dcc, html
 from dash.dependencies import Input, Output, State
+from flask_caching import Cache
 
 from bimorph_mirror_analysis.maths import (
     find_voltage_corrections_with_restraints,
@@ -19,6 +20,10 @@ external_stylesheets = [
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
 ]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+cache = Cache(
+    app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300}
+)
+
 
 app.layout = html.Div(
     children=[
@@ -181,7 +186,7 @@ app.layout = html.Div(
             id="optimal-voltages-section",
             children=[
                 html.Label("The optimal voltages are:"),
-                html.Span(id="optimal-voltages"),
+                html.Span(id="optimal-voltages", children=""),
             ],
             style={
                 "text-align": "center",
@@ -251,13 +256,15 @@ def parse_input(contents, filename):
 
 @callback(
     Output("data-upload-result", "children"),
+    Output("optimal-voltages", "children", allow_duplicate=True),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
+    prevent_initial_call="initial_duplicate",
 )
 def update_file(content, name):
     if content is not None:
         child = [parse_input(content, name)]
-        return child
+        return child, ""
 
 
 def calculate_optimal_voltages(
@@ -288,12 +295,13 @@ def calculate_optimal_voltages(
 
 
 @callback(
-    Output("optimal-voltages", "children"),
+    Output("optimal-voltages", "children", allow_duplicate=True),
     Input("calculate-button", "n_clicks"),
     State("minimum_voltage_allowed-input", "value"),
     State("maximum_voltage_allowed-input", "value"),
     State("maximum_adjacent_voltage_difference-input", "value"),
     State("baseline_voltage_scan_index-input", "value"),
+    prevent_initial_call="initial_duplicate",
 )
 def calculate_voltages(n_clicks, min_v, max_v, max_diff, baseline_voltage_scan_idx=0):
     # add human readbale save file here
