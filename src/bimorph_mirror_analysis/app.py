@@ -190,6 +190,29 @@ app.layout = html.Div(
                 "justify-content": "center",
             },
         ),
+        html.Div(
+            id="save-file-section",
+            children=[
+                html.Button(
+                    "Download Optimal Voltages",
+                    id="save-optimal-voltages-button",
+                    n_clicks=0,
+                    style={
+                        "textAlign": "center",
+                        "margin": "10px",
+                        "margin-left": "auto",
+                        "margin-right": "auto",
+                        "font-size": "20px",
+                        "background-color": "lightgrey",
+                        "display": "inherit",
+                        "justify-content": "center",
+                        "margin-top": "40px",
+                    },
+                ),
+                dcc.Download(id="download-optimal-voltages"),
+            ],
+            style={"display": "none"},
+        ),
         dcc.Store(id="loaded-data"),
     ],
     style={},
@@ -202,6 +225,7 @@ uploaded_data = {}
     Output("loaded-data", "data"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
+    prevent_initial_call=True,
 )
 def read_file(contents, filename):
     _, content_string = contents.split(",")
@@ -215,6 +239,7 @@ def read_file(contents, filename):
         "pivoted_dict": pivoted.to_dict(),
         "initial_voltages": initial_voltages,
         "increment": increment,
+        "filename": filename,
     }
 
     return output_dict
@@ -279,7 +304,10 @@ def update_file(content, name):
 
 def calculate_optimal_voltages(
     data_dict: dict[
-        (str, pd.DataFrame), (str, np.typing.NDArray[np.float64]), (str, float)
+        (str, pd.DataFrame),
+        (str, np.typing.NDArray[np.float64]),
+        (str, float),
+        (str, str),
     ],
     min_v: float,
     max_v: float,
@@ -318,10 +346,10 @@ def calculate_optimal_voltages(
 def calculate_voltages(
     n_clicks, uploaded_data, min_v, max_v, max_diff, baseline_voltage_scan_idx=0
 ):
-    if n_clicks is None:
+    # prevent running if data not uploaded
+    if not getattr(uploaded_data, "keys", None):
         return ""
-    elif n_clicks == 0:
-        return ""
+
     # add human readbale save file here
 
     optimal_voltages = calculate_optimal_voltages(
@@ -333,9 +361,33 @@ def calculate_voltages(
     )
     optimal_voltages = np.round(optimal_voltages, 2)
 
-    # save the file here
-
     return f"[{', '.join([str(i) for i in optimal_voltages])}]"
+
+
+@callback(
+    Output("save-file-section", "style"),
+    Input("optimal-voltages", "children"),
+    prevent_initial_call=True,
+)
+def make_download_button_visible(content):
+    return {"display": "block", "justify-content": "center", "margin-top": "40px"}
+
+
+@callback(
+    Output("download-optimal-voltages", "data"),
+    Input("save-optimal-voltages-button", "n_clicks"),
+    State("optimal-voltages", "children"),
+    State("loaded-data", "data"),
+    prevent_initial_call=True,
+)
+def download_data(n_clicks, arr_str, data):
+    fname = data["filename"]
+    arr = np.array(eval(arr_str))
+    return {
+        "base64": False,
+        "content": ",".join([str(i) for i in arr]),
+        "filename": f"{fname.split('.')[0]}_optimal_voltages.csv",
+    }
 
 
 if __name__ == "__main__":
