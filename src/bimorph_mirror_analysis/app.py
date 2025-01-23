@@ -6,7 +6,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.dependencies import Input, Output, State
-from flask_caching import Cache
 
 from bimorph_mirror_analysis.maths import (
     find_voltage_corrections_with_restraints,
@@ -18,9 +17,6 @@ external_stylesheets = [
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
 ]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
-cache = Cache(
-    app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300}
-)
 
 
 app.layout = html.Div(
@@ -194,6 +190,7 @@ app.layout = html.Div(
                 "justify-content": "center",
             },
         ),
+        dcc.Store(id="loaded-data"),
     ],
     style={},
 )
@@ -201,21 +198,33 @@ app.layout = html.Div(
 uploaded_data = {}
 
 
-@cache.memoize()
+@callback(
+    Output("loaded-data", "data"),
+    Input("upload-data", "contents"),
+    State("upload-data", "filename"),
+)
+def read_file(contents, filename):
+    _, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+
+    pivoted, initial_voltages, increment = read_bluesky_plan_output(
+        io.StringIO(decoded.decode("utf-8"))
+    )
+
+    output_dict = {
+        "pivoted_dict": pivoted.to_dict(),
+        "initial_voltages": initial_voltages,
+        "increment": increment,
+    }
+
+    return output_dict
+
+
 def parse_input(contents, filename):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
     try:
-        pivoted, initial_voltages, increment = read_bluesky_plan_output(
-            io.StringIO(decoded.decode("utf-8"))
-        )
-
         df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-
-        # Store the dataframe in the global variable
-        uploaded_data["pivoted"] = pivoted
-        uploaded_data["initial_voltages"] = initial_voltages
-        uploaded_data["increment"] = increment
 
         # Create a Plotly table
         table = go.Figure(
@@ -277,9 +286,10 @@ def calculate_optimal_voltages(
     max_diff: float,
     baseline_voltage_scan_idx: int,
 ) -> np.typing.NDArray[np.float64]:
-    pivoted = data_dict["pivoted"]
+    pivoted = pd.DataFrame(data_dict["pivoted_dict"])
     initial_voltages = data_dict["initial_voltages"]
     increment = data_dict["increment"]
+
     # numpy array of pencil beam scans
     data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
@@ -298,20 +308,21 @@ def calculate_optimal_voltages(
 @callback(
     Output("optimal-voltages", "children", allow_duplicate=True),
     Input("calculate-button", "n_clicks"),
+    State("loaded-data", "data"),
     State("minimum_voltage_allowed-input", "value"),
     State("maximum_voltage_allowed-input", "value"),
     State("maximum_adjacent_voltage_difference-input", "value"),
     State("baseline_voltage_scan_index-input", "value"),
     prevent_initial_call="initial_duplicate",
 )
-def calculate_voltages(n_clicks, min_v, max_v, max_diff, baseline_voltage_scan_idx=0):
+def calculate_voltages(
+    n_clicks, uploaded_data, min_v, max_v, max_diff, baseline_voltage_scan_idx=0
+):
     if n_clicks is None:
         return ""
     elif n_clicks == 0:
         return ""
     # add human readbale save file here
-
-    cached_data = cache.get
 
     optimal_voltages = calculate_optimal_voltages(
         uploaded_data,
