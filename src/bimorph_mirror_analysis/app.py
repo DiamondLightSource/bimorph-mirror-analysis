@@ -292,7 +292,7 @@ def parse_input(contents, filename):
     Output("optimal-voltages", "children", allow_duplicate=True),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
-    prevent_initial_call="initial_duplicate",
+    prevent_initial_call=True,
 )
 def update_file(content, name):
     if content is not None:
@@ -341,7 +341,7 @@ def calculate_optimal_voltages(
     State("maximum_voltage_allowed-input", "value"),
     State("maximum_adjacent_voltage_difference-input", "value"),
     State("baseline_voltage_scan_index-input", "value"),
-    prevent_initial_call="initial_duplicate",
+    prevent_initial_call=True,
 )
 def calculate_voltages(
     n_clicks, uploaded_data, min_v, max_v, max_diff, baseline_voltage_scan_idx=0
@@ -366,11 +366,19 @@ def calculate_voltages(
 
 @callback(
     Output("save-file-section", "style"),
-    Input("optimal-voltages", "children"),
+    Input("calculate-button", "n_clicks"),
+    State("loaded-data", "data"),
     prevent_initial_call=True,
 )
-def make_download_button_visible(content):
-    return {"display": "block", "justify-content": "center", "margin-top": "40px"}
+def make_download_button_visible(content, data):
+    if type(data) is dict:
+        if "filename" in data.keys():
+            return {
+                "display": "block",
+                "justify-content": "center",
+                "margin-top": "40px",
+            }
+    return {"display": "none"}
 
 
 @callback(
