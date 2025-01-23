@@ -203,6 +203,7 @@ app.layout = html.Div(
 uploaded_data = {}
 
 
+@cache.memoize()
 def parse_input(contents, filename):
     content_type, content_string = contents.split(",")
     decoded = base64.b64decode(content_string)
@@ -263,8 +264,10 @@ def parse_input(contents, filename):
 )
 def update_file(content, name):
     if content is not None:
-        child = [parse_input(content, name)]
+        child = parse_input(content, name)
         return child, ""
+    else:
+        return "", ""
 
 
 def calculate_optimal_voltages(
@@ -304,7 +307,13 @@ def calculate_optimal_voltages(
     prevent_initial_call="initial_duplicate",
 )
 def calculate_voltages(n_clicks, min_v, max_v, max_diff, baseline_voltage_scan_idx=0):
+    if n_clicks is None:
+        return ""
+    elif n_clicks == 0:
+        return ""
     # add human readbale save file here
+
+    cached_data = cache.get
 
     optimal_voltages = calculate_optimal_voltages(
         uploaded_data,
