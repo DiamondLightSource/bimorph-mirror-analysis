@@ -1,6 +1,7 @@
 import base64
 import io
 
+import dash_ag_grid as dag
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -44,6 +45,56 @@ app.layout = html.Div(
                 "font-size": "20px",
                 "margin-top": "20px",
             },
+            children=html.Div(
+                id="data-upload-result-children",
+                children=[
+                    html.I(className="fas fa-file-csv"),  # Icon for CSV file
+                    html.Span(id="data-file-name", children=""),
+                ],
+                style={"display": "none"},
+            ),
+        ),
+        html.Div(
+            id="data-viewer",
+            style={"display": "none"},
+            children=[
+                html.Div(
+                    id="ag-grid-container",
+                    children=[
+                        html.Div(
+                            id="ag-grid-buttons",
+                            children=[
+                                dcc.RadioItems(
+                                    id="ag-grid-selector",
+                                    options=["Raw Data", "Pivoted Data"],
+                                    value="Raw Data",
+                                    inline=True,
+                                    style={
+                                        "margin": "auto",
+                                        "margin-top": "20px",
+                                        "display": "block",
+                                        "text-align": "center",
+                                    },
+                                ),
+                            ],
+                        ),
+                        dag.AgGrid(
+                            id="ag-grid",
+                            defaultColDef={
+                                "sortable": True,
+                                "filter": True,
+                                "resizable": True,
+                            },
+                            style={
+                                "height": "400px",
+                                "width": "80%",
+                                "margin": "auto",
+                                "margin-top": "5px",
+                            },
+                        ),
+                    ],
+                ),
+            ],
         ),
         html.Div(
             id="input-variables",
@@ -218,88 +269,63 @@ app.layout = html.Div(
     style={},
 )
 
-uploaded_data = {}
-
 
 @callback(
     Output("loaded-data", "data"),
+    Output("data-file-name", "children"),
+    Output("data-upload-result-children", "style"),
+    Output("data-viewer", "style"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     prevent_initial_call=True,
 )
 def read_file(contents, filename):
-    _, content_string = contents.split(",")
-    decoded = base64.b64decode(content_string)
-
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(
-        io.StringIO(decoded.decode("utf-8"))
-    )
-
-    output_dict = {
-        "pivoted_dict": pivoted.to_dict(),
-        "initial_voltages": initial_voltages,
-        "increment": increment,
-        "filename": filename,
-    }
-
-    return output_dict
-
-
-def parse_input(contents, filename):
-    content_type, content_string = contents.split(",")
-    decoded = base64.b64decode(content_string)
     try:
+        _, content_string = contents.split(",")
+        decoded = base64.b64decode(content_string)
+
         df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
 
-        # Create a Plotly table
-        table = go.Figure(
-            data=[
-                go.Table(
-                    header={
-                        "values": list(df.columns),
-                        "fill_color": "paleturquoise",
-                        "align": "left",
-                    },
-                    cells={
-                        "values": [df[col] for col in df.columns],
-                        "fill_color": "lavender",
-                        "align": "left",
-                    },
-                    # columnwidth="auto",
-                )
-            ]
+        pivoted, initial_voltages, increment = read_bluesky_plan_output(
+            io.StringIO(decoded.decode("utf-8"))
         )
 
-        return html.Div(
-            [
-                html.I(className="fas fa-file-csv"),  # Icon for CSV file
-                html.Span(f" {filename}"),
-                html.Div(dcc.Graph(figure=table)),
-            ]
-        )
+        output_dict = {
+            "raw_data_dict": df.to_dict(),
+            "pivoted_data_dict": pivoted.to_dict(),
+            "initial_voltages": initial_voltages,
+            "increment": increment,
+            "filename": filename,
+        }
+
+        return output_dict, filename, {"display": "block"}, {"display": "block"}
+
     except Exception as e:
         print(e)
-        return html.Div(
-            [
-                "There was an error processing this file.",
-                html.Span(f" {filename}"),
-            ]
-        )
+        return {}
 
 
 @callback(
-    Output("data-upload-result", "children"),
-    Output("optimal-voltages", "children", allow_duplicate=True),
-    Input("upload-data", "contents"),
-    State("upload-data", "filename"),
+    Output("ag-grid", "columnDefs"),
+    Output("ag-grid", "rowData"),
+    State("loaded-data", "data"),
+    Input("ag-grid-selector", "value"),
+    Input("data-viewer", "style"),
     prevent_initial_call=True,
 )
-def update_file(content, name):
-    if content is not None:
-        child = parse_input(content, name)
-        return child, ""
+def change_table(data_dict, value, style):
+    if value == "Raw Data":
+        df = pd.DataFrame(data_dict["raw_data_dict"])
+    elif value == "Pivoted Data":
+        df = pd.DataFrame(data_dict["pivoted_data_dict"])
     else:
-        return "", ""
+        print("Error: Invalid value for table selector")
+        print(value)
+
+    columns = [{"headerName": col, "field": col} for col in df.columns]
+    data = df.to_dict("records")
+
+    return columns, data
 
 
 def calculate_optimal_voltages(
@@ -314,7 +340,7 @@ def calculate_optimal_voltages(
     max_diff: float,
     baseline_voltage_scan_idx: int,
 ) -> np.typing.NDArray[np.float64]:
-    pivoted = pd.DataFrame(data_dict["pivoted_dict"])
+    pivoted = pd.DataFrame(data_dict["pivoted_data_dict"])
     initial_voltages = data_dict["initial_voltages"]
     increment = data_dict["increment"]
 
