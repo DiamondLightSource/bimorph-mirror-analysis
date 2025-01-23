@@ -1,12 +1,10 @@
 import base64
-import datetime
 import io
 
-import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, State, callback, dash_table, dcc, html
+from dash import Dash, Input, Output, State, callback, dcc, html
 from dash.dependencies import Input, Output, State
 from flask_caching import Cache
 
