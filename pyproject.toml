@@ -23,6 +23,7 @@ dependencies = [
     "dash",
     "dash-bootstrap-components",
     "dash-ag-grid",
+    "dash-testing",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
