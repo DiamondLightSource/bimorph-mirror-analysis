@@ -76,6 +76,12 @@ app.layout = html.Div(
                                         "text-align": "center",
                                     },
                                 ),
+                                html.Button(
+                                    "Download pivoted data",
+                                    id="download-pivoted-data",
+                                    n_clicks=0,
+                                    style={"display": "block", "margin": "auto"},
+                                ),
                             ],
                         ),
                         dag.AgGrid(
@@ -85,6 +91,7 @@ app.layout = html.Div(
                                 "filter": True,
                                 "resizable": True,
                             },
+                            columnSize="sizeToFit",
                             style={
                                 "height": "400px",
                                 "width": "80%",
@@ -308,6 +315,8 @@ def read_file(contents, filename):
 @callback(
     Output("ag-grid", "columnDefs"),
     Output("ag-grid", "rowData"),
+    Output("ag-grid", "csvExportParams"),
+    Output("download-pivoted-data", "style"),
     State("loaded-data", "data"),
     Input("ag-grid-selector", "value"),
     Input("data-viewer", "style"),
@@ -316,8 +325,11 @@ def read_file(contents, filename):
 def change_table(data_dict, value, style):
     if value == "Raw Data":
         df = pd.DataFrame(data_dict["raw_data_dict"])
+        pivot_data_style = {"display": "none"}
     elif value == "Pivoted Data":
         df = pd.DataFrame(data_dict["pivoted_data_dict"])
+        pivot_data_style = {"display": "block", "margin": "auto"}
+
     else:
         print("Error: Invalid value for table selector")
         print(value)
@@ -325,7 +337,22 @@ def change_table(data_dict, value, style):
     columns = [{"headerName": col, "field": col} for col in df.columns]
     data = df.to_dict("records")
 
-    return columns, data
+    return (
+        columns,
+        data,
+        {"fileName": f"{data_dict['filename'].split('.')[0]}_pivoted.csv"},
+        pivot_data_style,
+    )
+
+
+@callback(
+    Output("ag-grid", "exportDataAsCsv"),
+    Input("download-pivoted-data", "n_clicks"),
+)
+def export_data_as_csv(n_clicks):
+    if n_clicks:
+        return True
+    return False
 
 
 def calculate_optimal_voltages(
