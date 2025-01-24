@@ -1,12 +1,12 @@
 import base64
 import io
+from typing import Any, Dict, TypedDict
 
 import dash_ag_grid as dag
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, callback, dcc, html
-from dash.dependencies import Input, Output, State
 
 from bimorph_mirror_analysis.maths import (
     find_voltage_corrections_with_restraints,
@@ -17,7 +17,7 @@ external_stylesheets = [
     "https://codepen.io/chriddyp/pen/bWLwgP.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
 ]
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = Dash(__name__, external_stylesheets=external_stylesheets)  # type:ignore
 
 
 app.layout = html.Div(
@@ -277,6 +277,14 @@ app.layout = html.Div(
 )
 
 
+class DataDict(TypedDict):
+    raw_data_dict: dict["str", "str"]
+    pivoted_data_dict: dict["str", "str"]
+    initial_voltages: np.typing.NDArray[np.float64]
+    increment: float
+    filename: str
+
+
 @callback(
     Output("loaded-data", "data"),
     Output("data-file-name", "children"),
@@ -286,30 +294,43 @@ app.layout = html.Div(
     State("upload-data", "filename"),
     prevent_initial_call=True,
 )
-def read_file(contents, filename):
+def read_file(
+    contents: str, filename: str
+) -> tuple[DataDict, str, dict[str, str], dict[str, str]]:
     try:
         _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
 
-        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))  # type: ignore
 
         pivoted, initial_voltages, increment = read_bluesky_plan_output(
             io.StringIO(decoded.decode("utf-8"))
         )
 
-        output_dict = {
-            "raw_data_dict": df.to_dict(),
-            "pivoted_data_dict": pivoted.to_dict(),
+        output_dict: DataDict = {
+            "raw_data_dict": df.to_dict(),  # type: ignore
+            "pivoted_data_dict": pivoted.to_dict(),  # type: ignore
             "initial_voltages": initial_voltages,
             "increment": increment,
             "filename": filename,
         }
 
-        return output_dict, filename, {"display": "block"}, {"display": "block"}
+        return (output_dict, filename, {"display": "block"}, {"display": "block"})
 
     except Exception as e:
         print(e)
-        return {}
+        return (
+            DataDict(
+                raw_data_dict={},
+                pivoted_data_dict={},
+                initial_voltages=np.array([]),
+                increment=0,
+                filename="",
+            ),
+            "There was an error processing this file: " + filename,
+            {"display": "block"},
+            {"display": "none"},
+        )
 
 
 @callback(
