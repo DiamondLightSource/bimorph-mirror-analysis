@@ -1,11 +1,10 @@
 import base64
 import io
-from typing import Any, Dict, TypedDict
+from typing import Any, TypedDict
 
 import dash_ag_grid as dag
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, callback, dcc, html
 
 from bimorph_mirror_analysis.maths import (
@@ -49,7 +48,9 @@ app.layout = html.Div(
                 id="data-upload-result-children",
                 children=[
                     html.I(className="fas fa-file-csv"),  # Icon for CSV file
-                    html.Span(id="data-file-name", children=""),
+                    html.Span(
+                        id="data-file-name", children="", style={"margin-left": "5px"}
+                    ),
                 ],
                 style={"display": "none"},
             ),
@@ -343,7 +344,14 @@ def read_file(
     Input("data-viewer", "style"),
     prevent_initial_call=True,
 )
-def change_table(data_dict, value, style):
+def change_table(
+    data_dict: DataDict, value: str, style: dict[str, str]
+) -> tuple[
+    list[dict[str, str]],
+    dict[str, str],
+    dict[str, str],
+    dict[str, str],
+]:
     if value == "Raw Data":
         df = pd.DataFrame(data_dict["raw_data_dict"])
         pivot_data_style = {"display": "none"}
@@ -354,9 +362,12 @@ def change_table(data_dict, value, style):
     else:
         print("Error: Invalid value for table selector")
         print(value)
+        pivot_data_style = {"display": "block", "margin": "auto"}
+
+        return ([{}], {}, {}, pivot_data_style)
 
     columns = [{"headerName": col, "field": col} for col in df.columns]
-    data = df.to_dict("records")
+    data: dict[str, str] = df.to_dict("records")  # type: ignore
 
     return (
         columns,
@@ -370,22 +381,17 @@ def change_table(data_dict, value, style):
     Output("ag-grid", "exportDataAsCsv"),
     Input("download-pivoted-data", "n_clicks"),
 )
-def export_data_as_csv(n_clicks):
+def export_data_as_csv(n_clicks: int) -> bool:
     if n_clicks:
         return True
     return False
 
 
 def calculate_optimal_voltages(
-    data_dict: dict[
-        (str, pd.DataFrame),
-        (str, np.typing.NDArray[np.float64]),
-        (str, float),
-        (str, str),
-    ],
-    min_v: float,
-    max_v: float,
-    max_diff: float,
+    data_dict: DataDict,
+    min_v: int,
+    max_v: int,
+    max_diff: int,
     baseline_voltage_scan_idx: int,
 ) -> np.typing.NDArray[np.float64]:
     pivoted = pd.DataFrame(data_dict["pivoted_data_dict"])
@@ -393,7 +399,7 @@ def calculate_optimal_voltages(
     increment = data_dict["increment"]
 
     # numpy array of pencil beam scans
-    data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+    data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
     voltage_adjustments = find_voltage_corrections_with_restraints(
         data,
@@ -418,8 +424,13 @@ def calculate_optimal_voltages(
     prevent_initial_call=True,
 )
 def calculate_voltages(
-    n_clicks, uploaded_data, min_v, max_v, max_diff, baseline_voltage_scan_idx=0
-):
+    n_clicks: int,
+    uploaded_data: DataDict,
+    min_v: int,
+    max_v: int,
+    max_diff: int,
+    baseline_voltage_scan_idx: int = 0,
+) -> str:
     # prevent running if data not uploaded
     if not getattr(uploaded_data, "keys", None):
         return ""
@@ -428,9 +439,9 @@ def calculate_voltages(
 
     optimal_voltages = calculate_optimal_voltages(
         uploaded_data,
-        float(min_v),
-        float(max_v),
-        float(max_diff),
+        int(min_v),
+        int(max_v),
+        int(max_diff),
         int(baseline_voltage_scan_idx),
     )
     optimal_voltages = np.round(optimal_voltages, 2)
@@ -444,8 +455,10 @@ def calculate_voltages(
     State("loaded-data", "data"),
     prevent_initial_call=True,
 )
-def make_download_button_visible(content, data):
-    if type(data) is dict:
+def make_download_button_visible(n_clicks: int, data: DataDict) -> dict[str, str]:
+    # the below check will evaluate to true if data is of type DataDict
+    # checking if type is dict because DataDict does not exist at runtime
+    if type(data) is dict:  # type: ignore
         if "filename" in data.keys():
             return {
                 "display": "block",
@@ -462,7 +475,7 @@ def make_download_button_visible(content, data):
     State("loaded-data", "data"),
     prevent_initial_call=True,
 )
-def download_data(n_clicks, arr_str, data):
+def download_data(n_clicks: int, arr_str: str, data: DataDict) -> dict[str, Any]:
     fname = data["filename"]
     arr = np.array(eval(arr_str))
     return {
@@ -473,4 +486,4 @@ def download_data(n_clicks, arr_str, data):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)  # type:ignore
