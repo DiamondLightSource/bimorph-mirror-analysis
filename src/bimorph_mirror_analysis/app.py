@@ -2,10 +2,10 @@ import base64
 import io
 from typing import Any, TypedDict
 
-import dash_ag_grid as dag
+import dash_ag_grid as dag  # type: ignore
 import numpy as np
 import pandas as pd
-from dash import Dash, Input, Output, State, callback, dcc, html
+from dash import Dash, Input, Output, State, callback, dcc, html  # type: ignore
 
 from bimorph_mirror_analysis.maths import (
     find_voltage_corrections_with_restraints,
