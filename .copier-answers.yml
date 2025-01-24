@@ -6,7 +6,7 @@ author_name: Luke Fiddy
 description: package to calibrate bimorph mirrors to focus a beamline to a target
     position
 distribution_name: bimorph-mirror-analysis
-docker: false
+docker: true
 docs_type: README
 git_platform: github.com
 github_org: ''

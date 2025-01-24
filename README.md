@@ -12,6 +12,7 @@ how it does it, and why people should use it.
 
 Source          | <https://github.com//bimorph-mirror-analysis>
 :---:           | :---:
+Docker          | `docker run ghcr.io//bimorph-mirror-analysis:latest`
 Releases        | <https://github.com//bimorph-mirror-analysis/releases>
 
 This is where you should put some images or code snippets that illustrate
