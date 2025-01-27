@@ -25,5 +25,5 @@ COPY --from=build /venv/ /venv/
 ENV PATH=/venv/bin:$PATH
 
 # change this entrypoint if it is not the same as the repo
-ENTRYPOINT ["bimorph-mirror-analysis"]
-CMD ["--version"]
+ENTRYPOINT ["python"]
+CMD ["src/bimorph-mirror-analysis/app.py"]
