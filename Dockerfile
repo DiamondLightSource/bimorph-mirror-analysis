@@ -24,7 +24,11 @@ FROM python:${PYTHON_VERSION}-slim AS runtime
 COPY --from=build /venv/ /venv/
 ENV PATH=/venv/bin:$PATH
 
+COPY --from=build /context /context
+WORKDIR /context
+
+
 # change this entrypoint if it is not the same as the repo
-ENTRYPOINT ["/bin/bash", "-c", "ls" "/venv"]
+ENTRYPOINT ["/bin/bash", "-c"]
 #CMD ["ls"]
-#CMD ["python","src/bimorph-mirror-analysis/app.py"]
+CMD ["python","/context/src/bimorph-mirror-analysis/app.py"]
