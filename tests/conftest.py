@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from bimorph_mirror_analysis.app import DataDict
+
 # Prevent pytest from catching exceptions when debugging in vscode so that break on
 # exception works correctly (see: https://github.com/pytest-dev/pytest/issues/7409)
 if os.getenv("PYTEST_RAISE", "0") == "1":
@@ -158,3 +160,24 @@ def actuator_data(
     data = np.loadtxt(input_path, delimiter=",")
     expected_output = np.loadtxt(output_path, delimiter=",")
     return data, expected_output
+
+
+@pytest.fixture
+def data_dict(raw_data, raw_data_pivoted) -> DataDict:
+    output: DataDict = {
+        "raw_data_dict": raw_data.to_dict(),
+        "pivoted_data_dict": raw_data_pivoted.to_dict(),
+        "inital_voltages": np.array([0.0, 0.0, 0.0]),
+        "increment": 100.0,
+        "filename": "raw_data.csv",
+    }
+
+    output = DataDict(
+        raw_data_dict=raw_data.to_dict(),
+        pivoted_data_dict=raw_data_pivoted.to_dict(),
+        inital_voltages=np.array([0.0, 0.0, 0.0]),
+        increment=100.0,
+        filename="raw_data.csv",
+    )
+
+    return output
