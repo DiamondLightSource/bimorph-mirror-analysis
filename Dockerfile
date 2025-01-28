@@ -29,6 +29,7 @@ WORKDIR /context
 
 
 # change this entrypoint if it is not the same as the repo
-ENTRYPOINT ["python", "./context/src/bimorph-mirror-analysis/app.py"]
+#ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["python", "./src/bimorph_mirror_analysis/app.py"]
 #CMD ["ls"]
 #CMD ["/src/bimorph-mirror-analysis/app.py"]
