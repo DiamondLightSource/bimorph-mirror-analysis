@@ -93,7 +93,7 @@ def server(
     port: int = typer.Option(8050, help="The port to run the server on."),
     debug: bool = typer.Option(False, help="Run the server in debug mode."),
 ):
-    run_server()
+    run_server(host, port, debug)
 
 
 if __name__ == "__main__":
