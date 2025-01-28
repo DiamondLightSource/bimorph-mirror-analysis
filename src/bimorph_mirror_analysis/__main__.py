@@ -86,7 +86,13 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
 
 
 @app.command()
-def server():
+def server(
+    host: str = typer.Option(
+        "0.0.0.0", help="The container ip address to run the server on."
+    ),
+    port: int = typer.Option(8050, help="The port to run the server on."),
+    debug: bool = typer.Option(False, help="Run the server in debug mode."),
+):
     run_server()
 
 

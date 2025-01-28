@@ -485,8 +485,8 @@ def download_data(n_clicks: int, arr_str: str, data: DataDict) -> dict[str, Any]
     }
 
 
-def run_server():
-    app.run(debug=True)  # type:ignore
+def run_server(host_ip: str = "127.0.0.1", port: int = 8050, debug: bool = False):
+    app.run(debug=debug, host=host_ip, port=port)  # type:ignore
 
 
 if __name__ == "__main__":
