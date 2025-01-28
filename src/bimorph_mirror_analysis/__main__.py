@@ -85,9 +85,7 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
     return optimal_voltages  # type: ignore
 
 
-app.command()
-
-
+@app.command()
 def server():
     run_server()
 
