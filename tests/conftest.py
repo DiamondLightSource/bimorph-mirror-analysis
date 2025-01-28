@@ -163,18 +163,10 @@ def actuator_data(
 
 
 @pytest.fixture
-def data_dict(raw_data, raw_data_pivoted) -> DataDict:
-    output: DataDict = {
-        "raw_data_dict": raw_data.to_dict(),
-        "pivoted_data_dict": raw_data_pivoted.to_dict(),
-        "inital_voltages": np.array([0.0, 0.0, 0.0]),
-        "increment": 100.0,
-        "filename": "raw_data.csv",
-    }
-
-    output = DataDict(
-        raw_data_dict=raw_data.to_dict(),
-        pivoted_data_dict=raw_data_pivoted.to_dict(),
+def data_dict(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame) -> DataDict:
+    output: DataDict = DataDict(
+        raw_data_dict=raw_data.to_dict(),  # type: ignore
+        pivoted_data_dict=raw_data_pivoted.to_dict(),  # type: ignore
         inital_voltages=np.array([0.0, 0.0, 0.0]),
         increment=100.0,
         filename="raw_data.csv",
