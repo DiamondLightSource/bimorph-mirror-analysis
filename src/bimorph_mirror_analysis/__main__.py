@@ -27,7 +27,7 @@ optimal voltages to, optional.",
     human_readable: str | None = typer.Option(
         None,
         help="The path to save the human readable pencil beam scan table. \
-            If the --human-readable flag is not supplied, the table is not saved.",
+If the --human-readable flag is not supplied, the table is not saved.",
     ),
 ):
     file_type = file_path.split(".")[-1]
