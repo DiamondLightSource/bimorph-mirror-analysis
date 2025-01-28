@@ -5,6 +5,7 @@ import datetime
 import numpy as np
 import typer
 
+from bimorph_mirror_analysis.app import run_server
 from bimorph_mirror_analysis.maths import find_voltage_corrections
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
 
@@ -82,6 +83,13 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
     voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
     optimal_voltages = initial_voltages + voltage_adjustments
     return optimal_voltages  # type: ignore
+
+
+app.command()
+
+
+def server():
+    run_server()
 
 
 if __name__ == "__main__":

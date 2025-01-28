@@ -485,5 +485,9 @@ def download_data(n_clicks: int, arr_str: str, data: DataDict) -> dict[str, Any]
     }
 
 
-if __name__ == "__main__":
+def run_server():
     app.run(debug=True)  # type:ignore
+
+
+if __name__ == "__main__":
+    run_server()
