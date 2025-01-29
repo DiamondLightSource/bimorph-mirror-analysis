@@ -62,3 +62,20 @@ def test_find_voltage_corrections_with_restraints_correct_output(
         expected_output,
         decimal=1,
     )
+
+
+@pytest.mark.parametrize(
+    "actuator_data",
+    [
+        ["tests/data/8_actuator_data.txt", "tests/data/8_actuator_output.txt"],
+    ],
+    indirect=True,
+)
+def test_find_voltage_corrections_with_restraints_index_error_throw(
+    actuator_data: tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]],
+):
+    data, _ = actuator_data
+    with pytest.raises(IndexError):
+        find_voltage_corrections_with_restraints(
+            data, -100, (-1000, 1000), 500, baseline_voltage_scan=12
+        )
