@@ -324,7 +324,7 @@ def read_file(
             DataDict(
                 raw_data_dict={},
                 pivoted_data_dict={},
-                initial_voltages=np.array([]),
+                initial_voltages=np.array([0]),
                 increment=0,
                 filename="",
             ),
@@ -381,7 +381,7 @@ def change_table(
     Output("ag-grid", "exportDataAsCsv"),
     Input("download-pivoted-data", "n_clicks"),
 )
-def export_data_as_csv(n_clicks: int) -> bool:
+def export_data_as_csv(n_clicks: int | None) -> bool:
     if n_clicks:
         return True
     return False
