@@ -460,11 +460,12 @@ def make_download_button_visible(n_clicks: int, data: DataDict) -> dict[str, str
     # checking if type is dict because DataDict does not exist at runtime
     if type(data) is dict:  # type: ignore
         if "filename" in data.keys():
-            return {
-                "display": "block",
-                "justify-content": "center",
-                "margin-top": "40px",
-            }
+            if data["filename"] != "":
+                return {
+                    "display": "block",
+                    "justify-content": "center",
+                    "margin-top": "40px",
+                }
     return {"display": "none"}
 
 
