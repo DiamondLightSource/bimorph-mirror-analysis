@@ -6,6 +6,11 @@ import numpy as np
 import typer
 
 from bimorph_mirror_analysis.maths import find_voltage_corrections
+from bimorph_mirror_analysis.plots import (
+    InfluenceFunctionPlot,
+    MirrorSurfacePlot,
+    PencilBeamScanPlot,
+)
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
 
 from . import __version__
@@ -67,6 +72,57 @@ def version_callback(value: bool):
     if value:
         typer.echo(f"Version: {__version__}")
         raise typer.Exit()
+
+
+@app.command(name=None)
+def generate_plots(
+    file_path: str = typer.Argument(help="The path to the csv file to be read."),
+    increment: float = typer.Argument(
+        help="The voltage increment applied to the actuators between pencil beam scans"
+    ),
+    output_dir: str = typer.Argument(
+        help="The directory to save the output plots to.",
+    ),
+    baseline_voltage_scan: int = typer.Option(
+        help="The index of the pencil beam scan which had no increment applied.",
+        default=0,
+    ),
+):
+    # add trailing slash to output_dir if not present
+    if output_dir[-1] != "/":
+        output_dir += "/"
+
+    pivoted, *_ = read_bluesky_plan_output(file_path)
+    pencil_beam_scan_cols = [
+        col for col in pivoted.columns if "pencil_beam_scan" in col
+    ]
+    slit_positions: np.typing.NDArray[np.float64] = pivoted[
+        "slit_position_x"
+    ].to_numpy()  # type: ignore
+
+    for col in pencil_beam_scan_cols:
+        i = int(col.split("_")[-1])
+        plot = PencilBeamScanPlot(pivoted, i)
+        plot.save_plot(output_dir + "pencil_beam_scan_" + str(i) + ".png")
+    print(f"Pencil Beam Scan plots have been saved to {output_dir}")
+
+    data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+    responses = np.diff(
+        data, axis=1
+    )  # calculate the response of each actuator by subtracting previous pencil beam
+    interation_matrix = responses / increment  # response per unit charge
+
+    for actuator_num in range(responses.shape[1]):
+        centroids = interation_matrix[:, actuator_num]
+        plot = InfluenceFunctionPlot(slit_positions, centroids, actuator_num)
+        plot.save_plot(output_dir + f"actuator_{actuator_num}_influence_function.png")
+
+    # Add in predicted centroid positions using restrained and unrestrained voltage
+    # corrections once the other prs are merged
+    plot = MirrorSurfacePlot(
+        slit_positions,
+        pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy(),  # type: ignore
+    )
 
 
 @app.callback()
