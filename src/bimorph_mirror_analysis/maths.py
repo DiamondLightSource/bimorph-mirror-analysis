@@ -64,7 +64,9 @@ def objective_function(
     coefficients: np.typing.NDArray[np.float64],
     targets: np.typing.NDArray[np.float64],
 ) -> float:
-    """Given a set of values for the voltages and their influence function coefficients
+    """Least-Squares based objective function
+
+    Given a set of values for the voltages and their influence function coefficients
     for each slit position, along with the set of target centroid adjustments, calulate
     the sum of squared errors across all slit positions.
 
@@ -78,6 +80,7 @@ def objective_function(
     Returns:
         The sum of squared errors for the set of values of the voltages.
 
+    ---
 
     The code below outlines what the function does in a readabl (but slower) way:
     sum = 0
