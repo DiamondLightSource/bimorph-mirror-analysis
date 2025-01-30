@@ -156,7 +156,7 @@ pencil beam scans
     baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
 
     target = np.mean(baseline_voltage_beamline_positions)
-    Y = target - baseline_voltage_beamline_positions
+    desired_corrections = target - baseline_voltage_beamline_positions
 
     # set initial guess voltages to all 1s
     initial_guess = np.ones(interation_matrix.shape[1])
@@ -183,7 +183,7 @@ pencil beam scans
     result = minimize(
         objective_function,
         initial_guess,
-        args=(interation_matrix, Y),
+        args=(interation_matrix, desired_corrections),
         method="SLSQP",
         bounds=bounds,
         constraints=constraints,  # type: ignore
