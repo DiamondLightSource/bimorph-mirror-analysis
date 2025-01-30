@@ -7,7 +7,7 @@ from scipy.optimize import minimize
 
 def find_voltage_corrections(
     data: np.typing.NDArray[np.float64],
-    v: float,
+    voltage_increment: float,
     baseline_voltage_scan: int = 0,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate voltage corrections to apply to bimorph.
@@ -19,7 +19,8 @@ def find_voltage_corrections(
     Args:
         data: A matrix of beamline centroid data, with rows of different slit positions
             and columns of pencil beam scans at different actuator voltages
-        v: The voltage increment applied to the actuators between pencil beam scans
+        voltage_increment: The voltage increment applied to the actuators between \
+pencil beam scans
         baseline_voltage_scan: The pencil beam scan to use as the baseline for the
             centroid calculation. 0 is the first scan, 1 is the second scan, etc.
             -1 can be used for the last scan and -2 for the second to last scan etc.
@@ -39,7 +40,7 @@ def find_voltage_corrections(
         data, axis=1
     )  # calculate the response of each actuator by subtracting previous pencil beam
 
-    interation_matrix = responses / v  # response per unit charge
+    interation_matrix = responses / voltage_increment  # response per unit charge
     # add columns of 1's to the left of H
     interation_matrix = np.hstack(
         (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
@@ -109,7 +110,7 @@ centroid positions"
 
 def find_voltage_corrections_with_restraints(
     data: np.typing.NDArray[np.float64],
-    v: float,
+    voltage_increment: float,
     voltage_range: tuple[int, int],
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
@@ -124,7 +125,8 @@ def find_voltage_corrections_with_restraints(
     Args:
         data: A matrix of beamline centroid data, with rows of different slit positions
             and columns of pencil beam scans at different actuator voltages
-        v: The voltage increment applied to the actuators between pencil beam scans
+        voltage_increment: The voltage increment applied to the actuators between \
+pencil beam scans
         voltage_range: The minimum and maximum values a voltage can take.
         max_consecutive_voltage_difference: The maximum voltage difference between two
             consecutive actuators on the bimorph mirror.
@@ -146,7 +148,7 @@ def find_voltage_corrections_with_restraints(
         data, axis=1
     )  # calculate the response of each actuator by subtracting previous pencil beam
 
-    interation_matrix = responses / v  # response per unit charge
+    interation_matrix = responses / voltage_increment  # response per unit charge
     # add columns of 1's to the left of H
     interation_matrix = np.hstack(
         (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
