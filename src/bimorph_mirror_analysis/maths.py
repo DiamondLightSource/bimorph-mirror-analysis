@@ -5,6 +5,30 @@ import numpy as np
 from scipy.optimize import minimize
 
 
+def process_pencil_beam_scans(
+    data: np.typing.NDArray[np.float64],
+    voltage_increment: float,
+    baseline_voltage_scan: int = 0,
+) -> tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]]:
+    # calculate the response of each actuator by subtracting previous pencil beam
+    responses = np.diff(data, axis=1)
+
+    # response per unit charge
+    interaction_matrix = responses / voltage_increment
+
+    # add columns of 1's to the left of H
+    interaction_matrix = np.hstack(
+        (np.ones((interaction_matrix.shape[0], 1)), interaction_matrix)
+    )
+
+    baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
+
+    target = np.mean(baseline_voltage_beamline_positions)
+    desired_corrections = target - baseline_voltage_beamline_positions
+
+    return interaction_matrix, desired_corrections
+
+
 def find_voltage_corrections(
     data: np.typing.NDArray[np.float64],
     voltage_increment: float,
@@ -36,28 +60,17 @@ pencil beam scans
                   {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
-    # calculate the response of each actuator by subtracting previous pencil beam
-    responses = np.diff(data, axis=1)
-
-    # response per unit charge
-    interaction_matrix = responses / voltage_increment
-
-    # add columns of 1's to the left of H
-    interaction_matrix = np.hstack(
-        (np.ones((interaction_matrix.shape[0], 1)), interaction_matrix)
+    interaction_matrix, desired_corrections = process_pencil_beam_scans(
+        data, voltage_increment, baseline_voltage_scan
     )
 
     # calculate the Moore-Penrose pseudo inverse of H
     interaction_matrix_inv = np.linalg.pinv(interaction_matrix)
 
-    baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
-
-    target = np.mean(baseline_voltage_beamline_positions)
-    desired_corrections = target - baseline_voltage_beamline_positions
-
+    # calculate the voltage required to move the centroid to the target position
     voltage_corrections: np.typing.NDArray[np.float64] = np.matmul(
         interaction_matrix_inv, desired_corrections
-    )  # calculate the voltage required to move the centroid to the target position
+    )
 
     return np.round(voltage_corrections[1:], decimals=2)  # return the voltages
 
@@ -146,20 +159,9 @@ pencil beam scans
                   {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
-    # calculate the response of each actuator by subtracting previous pencil beam
-    responses = np.diff(data, axis=1)
-
-    # response per unit charge
-    interaction_matrix = responses / voltage_increment
-
-    # add columns of 1's to the left of H
-    interaction_matrix = np.hstack(
-        (np.ones((interaction_matrix.shape[0], 1)), interaction_matrix)
+    interaction_matrix, desired_corrections = process_pencil_beam_scans(
+        data, voltage_increment, baseline_voltage_scan
     )
-    baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
-
-    target = np.mean(baseline_voltage_beamline_positions)
-    desired_corrections = target - baseline_voltage_beamline_positions
 
     # set initial guess voltages to all 1s
     initial_guess = np.ones(interaction_matrix.shape[1])
@@ -182,6 +184,7 @@ pencil beam scans
             return max_diff - abs(voltages[idx] - voltages[idx + 1])
 
         constraints.append({"type": "ineq", "fun": func})
+
     # minimise the objective function
     result = minimize(
         objective_function,
