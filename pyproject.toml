@@ -17,6 +17,8 @@ dependencies = [
     "pandas",
     "pandas-stubs",
     "typer",
+    "scipy",
+    "scipy-stubs",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
 license.file = "LICENSE"
