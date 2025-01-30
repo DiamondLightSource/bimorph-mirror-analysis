@@ -54,6 +54,16 @@ _optimal_voltages_{date}.csv"
     )
 
 
+def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
+    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    # numpy array of pencil beam scans
+    data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+
+    voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
+    optimal_voltages = initial_voltages + voltage_adjustments
+    return optimal_voltages  # type: ignore
+
+
 def version_callback(value: bool):
     if value:
         typer.echo(f"Version: {__version__}")
@@ -72,16 +82,6 @@ def main(
     ),
 ):
     pass
-
-
-def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
-    # numpy array of pencil beam scans
-    data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
-
-    voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
-    optimal_voltages = initial_voltages + voltage_adjustments
-    return optimal_voltages  # type: ignore
 
 
 if __name__ == "__main__":
