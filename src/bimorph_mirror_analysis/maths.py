@@ -40,15 +40,15 @@ pencil beam scans
     responses = np.diff(data, axis=1)
 
     # response per unit charge
-    interation_matrix = responses / voltage_increment
+    interaction_matrix = responses / voltage_increment
 
     # add columns of 1's to the left of H
-    interation_matrix = np.hstack(
-        (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
+    interaction_matrix = np.hstack(
+        (np.ones((interaction_matrix.shape[0], 1)), interaction_matrix)
     )
 
     # calculate the Moore-Penrose pseudo inverse of H
-    interation_matrix_inv = np.linalg.pinv(interation_matrix)
+    interaction_matrix_inv = np.linalg.pinv(interaction_matrix)
 
     baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
 
@@ -56,7 +56,7 @@ pencil beam scans
     Y = target - baseline_voltage_beamline_positions
 
     voltage_corrections: np.typing.NDArray[np.float64] = np.matmul(
-        interation_matrix_inv, Y
+        interaction_matrix_inv, Y
     )  # calculate the voltage required to move the centroid to the target position
 
     return np.round(voltage_corrections[1:], decimals=2)  # return the voltages
@@ -150,11 +150,11 @@ pencil beam scans
     responses = np.diff(data, axis=1)
 
     # response per unit charge
-    interation_matrix = responses / voltage_increment
+    interaction_matrix = responses / voltage_increment
 
     # add columns of 1's to the left of H
-    interation_matrix = np.hstack(
-        (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
+    interaction_matrix = np.hstack(
+        (np.ones((interaction_matrix.shape[0], 1)), interaction_matrix)
     )
     baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
 
@@ -162,9 +162,9 @@ pencil beam scans
     desired_corrections = target - baseline_voltage_beamline_positions
 
     # set initial guess voltages to all 1s
-    initial_guess = np.ones(interation_matrix.shape[1])
+    initial_guess = np.ones(interaction_matrix.shape[1])
 
-    bounds = [voltage_range for _ in range(interation_matrix.shape[1])]
+    bounds = [voltage_range for _ in range(interaction_matrix.shape[1])]
 
     class Constraint(TypedDict):
         type: str
@@ -172,7 +172,7 @@ pencil beam scans
 
     # build list of contraints objects
     constraints: list[Constraint] = []
-    for i in range(interation_matrix.shape[1] - 1):
+    for i in range(interaction_matrix.shape[1] - 1):
 
         def func(
             voltages: np.typing.NDArray[np.float64],
@@ -186,7 +186,7 @@ pencil beam scans
     result = minimize(
         objective_function,
         initial_guess,
-        args=(interation_matrix, desired_corrections),
+        args=(interaction_matrix, desired_corrections),
         method="SLSQP",
         bounds=bounds,
         constraints=constraints,  # type: ignore
