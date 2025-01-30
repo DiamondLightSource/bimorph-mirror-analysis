@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: check-added-large-files
       - id: check-yaml
+        exclude: bimorph-analysis-webapp/*
       - id: check-merge-conflict
       - id: end-of-file-fixer
 

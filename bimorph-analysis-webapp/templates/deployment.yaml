@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-deployment "
+spec:
+  replicas: { { .Values.replicaCount } }
+  selector:
+    matchLabels:
+      app: bimorph-app-test
+  template:
+    metadata:
+      labels:
+        app: bimorph-app-test
+    spec:
+      containers:
+        - name: bimorph-app-test
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: { { .Values.image.pullPolicy } }
+          args:
+          env:
+          resources:
+            limits:
+              cpu: "1"
+              memory: 300M
+          ports:
+            - name: http
+              containerPort: { { .Values.service.main.ports.http.port } }
+          volumeMounts:
+
+      volumes:

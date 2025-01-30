@@ -5,7 +5,8 @@ import datetime
 import numpy as np
 import typer
 
-from bimorph_mirror_analysis.maths import find_voltages
+from bimorph_mirror_analysis.app import run_server
+from bimorph_mirror_analysis.maths import find_voltage_corrections
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
 
 from . import __version__
@@ -26,7 +27,7 @@ optimal voltages to, optional.",
     human_readable: str | None = typer.Option(
         None,
         help="The path to save the human readable pencil beam scan table. \
-            If the --human-readable flag is not supplied, the table is not saved.",
+If the --human-readable flag is not supplied, the table is not saved.",
     ),
 ):
     file_type = file_path.split(".")[-1]
@@ -79,9 +80,20 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
     # numpy array of pencil beam scans
     data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
-    voltage_adjustments = find_voltages(data, increment)  # type: ignore
+    voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
     optimal_voltages = initial_voltages + voltage_adjustments
     return optimal_voltages  # type: ignore
+
+
+@app.command()
+def server(
+    host: str = typer.Option(
+        "0.0.0.0", help="The container ip address to run the server on."
+    ),
+    port: int = typer.Option(8050, help="The port to run the server on."),
+    debug: bool = typer.Option(False, help="Run the server in debug mode."),
+):
+    run_server(host, port, debug)
 
 
 if __name__ == "__main__":

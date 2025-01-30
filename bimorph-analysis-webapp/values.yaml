@@ -1,0 +1,19 @@
+# Default values for bimorph-analysis-webapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+domain: vbz18877.diamond.ac.uk
+
+image:
+  repository: ghcr.io/diamondlightsource/bimorph-mirror-analysis
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "2025.1.1b8"
+
+
+service:
+  main:
+    ports:
+      http:
+        port: 8050
