@@ -65,7 +65,7 @@ class MirrorSurfacePlot(Plot):
         self.ax.legend()  # type: ignore
 
 
-class BeamlineScanPlot(Plot):
+class PencilBeamScanPlot(Plot):
     def __init__(self, pivoted_df: pd.DataFrame, scan_num: int):
         super().__init__()
         self.ax.set_xlabel("Slit position", fontsize=18)  # type: ignore
