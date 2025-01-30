@@ -123,6 +123,30 @@ def objective_function(
     return np.sum((np.matmul(coefficients, voltages) - targets) ** 2)
 
 
+class Constraint(TypedDict):
+    type: str
+    fun: Callable[[np.typing.NDArray[np.float64]], float]
+
+
+def generate_minimize_constraints(
+    int_mat: np.typing.NDArray[np.float64], max_consecutive_voltage_difference: int
+) -> list[Constraint]:
+    # build list of contraints objects
+    constraints: list[Constraint] = []
+    for i in range(int_mat.shape[1] - 1):
+
+        def func(
+            voltages: np.typing.NDArray[np.float64],
+            max_diff: int = max_consecutive_voltage_difference,
+            idx: int = i,
+        ) -> float:
+            return max_diff - abs(voltages[idx] - voltages[idx + 1])
+
+        constraints.append({"type": "ineq", "fun": func})
+
+    return constraints
+
+
 def find_voltage_corrections_with_restraints(
     data: np.typing.NDArray[np.float64],
     voltage_increment: float,
@@ -168,22 +192,9 @@ pencil beam scans
 
     bounds = [voltage_range for _ in range(interaction_matrix.shape[1])]
 
-    class Constraint(TypedDict):
-        type: str
-        fun: Callable[[np.typing.NDArray[np.float64]], float]
-
-    # build list of contraints objects
-    constraints: list[Constraint] = []
-    for i in range(interaction_matrix.shape[1] - 1):
-
-        def func(
-            voltages: np.typing.NDArray[np.float64],
-            max_diff: int = max_consecutive_voltage_difference,
-            idx: int = i,
-        ) -> float:
-            return max_diff - abs(voltages[idx] - voltages[idx + 1])
-
-        constraints.append({"type": "ineq", "fun": func})
+    constraints = generate_minimize_constraints(
+        interaction_matrix, max_consecutive_voltage_difference
+    )
 
     # minimise the objective function
     result = minimize(
