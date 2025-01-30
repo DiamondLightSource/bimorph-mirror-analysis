@@ -36,15 +36,17 @@ pencil beam scans
                   {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
-    responses = np.diff(
-        data, axis=1
-    )  # calculate the response of each actuator by subtracting previous pencil beam
+    # calculate the response of each actuator by subtracting previous pencil beam
+    responses = np.diff(data, axis=1)
 
-    interation_matrix = responses / voltage_increment  # response per unit charge
+    # response per unit charge
+    interation_matrix = responses / voltage_increment
+
     # add columns of 1's to the left of H
     interation_matrix = np.hstack(
         (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
     )
+
     # calculate the Moore-Penrose pseudo inverse of H
     interation_matrix_inv = np.linalg.pinv(interation_matrix)
 
@@ -144,11 +146,12 @@ pencil beam scans
                   {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
-    responses = np.diff(
-        data, axis=1
-    )  # calculate the response of each actuator by subtracting previous pencil beam
+    # calculate the response of each actuator by subtracting previous pencil beam
+    responses = np.diff(data, axis=1)
 
-    interation_matrix = responses / voltage_increment  # response per unit charge
+    # response per unit charge
+    interation_matrix = responses / voltage_increment
+
     # add columns of 1's to the left of H
     interation_matrix = np.hstack(
         (np.ones((interation_matrix.shape[0], 1)), interation_matrix)
