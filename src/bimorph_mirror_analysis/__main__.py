@@ -20,8 +20,7 @@ def calculate_voltages(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
     output_path: str | None = typer.Option(
         None,
-        help="The path to save the output\
-optimal voltages to, optional.",
+        help="The path to save the output optimal voltages to, optional.",
     ),
     human_readable: str | None = typer.Option(
         None,
