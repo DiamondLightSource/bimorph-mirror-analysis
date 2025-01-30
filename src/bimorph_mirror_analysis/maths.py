@@ -53,10 +53,10 @@ pencil beam scans
     baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
 
     target = np.mean(baseline_voltage_beamline_positions)
-    Y = target - baseline_voltage_beamline_positions
+    desired_corrections = target - baseline_voltage_beamline_positions
 
     voltage_corrections: np.typing.NDArray[np.float64] = np.matmul(
-        interaction_matrix_inv, Y
+        interaction_matrix_inv, desired_corrections
     )  # calculate the voltage required to move the centroid to the target position
 
     return np.round(voltage_corrections[1:], decimals=2)  # return the voltages
