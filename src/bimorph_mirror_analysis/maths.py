@@ -82,7 +82,7 @@ def objective_function(
 
     ---
 
-    The code below outlines what the function does in a readabl (but slower) way:
+    The code below outlines what the function does in a readable (but slower) way:
     sum = 0
     for row_num in range(len(coefficients)):
         f = np.sum([coefficients[row_num][i]*voltages[i] for i in range(len(voltages))])
