@@ -123,6 +123,7 @@ def generate_plots(
         slit_positions,
         pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy(),  # type: ignore
     )
+    plot.save_plot(output_dir + "mirror_surface_plot.png")
 
 
 @app.callback()
