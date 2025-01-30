@@ -1,5 +1,6 @@
 import matplotlib.pyploy as plt
 import numpy as np
+import pandas as pd
 
 
 class Plot:
@@ -62,3 +63,12 @@ class MirrorSurfacePlot(Plot):
                 label="Predicted, restrained",
             )
         self.ax.legend()  # type: ignore
+
+
+class BeamlineScanPlot(Plot):
+    def __init__(self, pivoted_df: pd.DataFrame, scan_num: int):
+        super().__init__()
+        self.ax.set_xlabel("Slit position", fontsize=18)  # type: ignore
+        self.ax.set_ylabel("Centroid position", fontsize=18)  # type: ignore
+        self.ax.set_title(f"Beamline Scan {scan_num}", fontsize=24, pad=30)  # type: ignore
+        self.ax.plot(pivoted_df[f"pencil_beam_scan_{scan_num}"])  # type: ignore
