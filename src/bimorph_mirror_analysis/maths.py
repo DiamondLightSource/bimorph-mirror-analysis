@@ -96,13 +96,13 @@ def objective_function(
     assert len(voltages) == coefficients.shape[1], (
         f"Number of voltages: {len(voltages)}, Number of coefficients: \
 {coefficients.shape[1]}\nThe number of voltages provided must match the number of\
-columns in the coefficients matrix"
+ columns in the coefficients matrix"
     )
     assert coefficients.shape[0] == len(targets), (
         f"Number of coefficients: {coefficients.shape[0]},\
     Number of target centroid positions: {len(targets)}\
         \nThe number of rows in the coefficients matrix must match the number of target\
-centroid positions"
+ centroid positions"
     )
 
     return np.sum((np.matmul(coefficients, voltages) - targets) ** 2)
