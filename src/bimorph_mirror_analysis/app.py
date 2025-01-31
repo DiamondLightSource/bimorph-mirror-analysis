@@ -2,7 +2,7 @@ import base64
 import io
 from typing import Any, TypedDict
 
-import dash_ag_grid as dag  # type: ignore
+import dash
 import numpy as np
 import pandas as pd
 from dash import Dash, Input, Output, State, callback, dcc, html  # type: ignore
@@ -16,11 +16,12 @@ external_stylesheets = [
     "https://codepen.io/chriddyp/pen/bWLwgP.css",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
 ]
-app = Dash(__name__, external_stylesheets=external_stylesheets)  # type:ignore
+app = Dash(__name__, external_stylesheets=external_stylesheets, use_pages=True)  # type:ignore
 
 
 app.layout = html.Div(
     children=[
+        dcc.Location(id="url", refresh=False),
         html.H1("Bimorph Mirror Analysis", style={"textAlign": "center"}),
         dcc.Upload(
             html.Button(
@@ -56,223 +57,19 @@ app.layout = html.Div(
             ),
         ),
         html.Div(
-            id="data-viewer",
-            style={"display": "none"},
-            children=[
+            [
                 html.Div(
-                    id="ag-grid-container",
-                    children=[
-                        html.Div(
-                            id="ag-grid-buttons",
-                            children=[
-                                dcc.RadioItems(
-                                    id="ag-grid-selector",
-                                    options=["Raw Data", "Pivoted Data"],
-                                    value="Raw Data",
-                                    inline=True,
-                                    style={
-                                        "margin": "auto",
-                                        "margin-top": "20px",
-                                        "display": "block",
-                                        "text-align": "center",
-                                    },
-                                ),
-                                html.Button(
-                                    "Download pivoted data",
-                                    id="download-pivoted-data",
-                                    n_clicks=0,
-                                    style={"display": "block", "margin": "auto"},
-                                ),
-                            ],
-                        ),
-                        dag.AgGrid(
-                            id="ag-grid",
-                            defaultColDef={
-                                "sortable": True,
-                                "filter": True,
-                                "resizable": True,
-                            },
-                            columnSize="sizeToFit",
-                            style={
-                                "height": "400px",
-                                "width": "80%",
-                                "margin": "auto",
-                                "margin-top": "5px",
-                            },
-                        ),
-                    ],
-                ),
-            ],
+                    dcc.Link(
+                        f"{page['name']} - {page['path']}",
+                        href=page["relative_path"],  # type: ignore
+                    )
+                )
+                for page in dash.page_registry.values()  # type: ignore
+            ]
         ),
-        html.Div(
-            id="input-variables",
-            children=[
-                html.Div(
-                    [
-                        html.Label(
-                            "minimum voltage allowed",
-                            style={
-                                "text-align": "center",
-                                "color": "darkgrey",
-                                "font-weight": "bold",
-                                "font-size": "18px",
-                            },
-                        ),
-                        dcc.Input(
-                            id="minimum_voltage_allowed-input",
-                            value=-1000,
-                            style={
-                                "margin-left": "10px",
-                                "margin-right": "10px",
-                                "display": "block",
-                            },
-                            size="30",
-                        ),
-                    ],
-                    style={
-                        "align-items": "center",
-                        "align-content": "center",
-                    },
-                ),
-                html.Div(
-                    [
-                        html.Label(
-                            "maximum voltage allowed",
-                            style={
-                                "text-align": "center",
-                                "color": "darkgrey",
-                                "font-weight": "bold",
-                                "font-size": "18px",
-                            },
-                        ),
-                        dcc.Input(
-                            id="maximum_voltage_allowed-input",
-                            value=1000,
-                            style={
-                                "margin-left": "10px",
-                                "margin-right": "10px",
-                                "display": "block",
-                            },
-                            size="30",
-                        ),
-                    ],
-                    style={
-                        "align-items": "center",
-                        "align-content": "center",
-                    },
-                ),
-                html.Div(
-                    [
-                        html.Label(
-                            "maximum adjacent voltage difference",
-                            style={
-                                "text-align": "center",
-                                "color": "darkgrey",
-                                "font-weight": "bold",
-                                "font-size": "18px",
-                            },
-                        ),
-                        dcc.Input(
-                            id="maximum_adjacent_voltage_difference-input",
-                            value=500,
-                            style={
-                                "margin-left": "10px",
-                                "margin-right": "10px",
-                                "display": "block",
-                            },
-                            size="30",
-                        ),
-                    ],
-                    style={
-                        "align-items": "center",
-                        "align-content": "center",
-                    },
-                ),
-                html.Div(
-                    [
-                        html.Label(
-                            "baseline voltage scan index",
-                            style={
-                                "text-align": "center",
-                                "color": "darkgrey",
-                                "font-weight": "bold",
-                                "font-size": "18px",
-                            },
-                        ),
-                        dcc.Input(
-                            id="baseline_voltage_scan_index-input",
-                            value=0,
-                            style={
-                                "margin-left": "10px",
-                                "margin-right": "10px",
-                                "display": "block",
-                            },
-                            size="30",
-                        ),
-                    ],
-                    style={
-                        "align-items": "center",
-                        "align-content": "center",
-                    },
-                ),
-            ],
-            style={
-                "display": "flex",
-                "justify-content": "center",
-                "align-items": "center",
-                "margin-top": "50px",
-            },
-        ),
-        html.Button(
-            "Calculate Voltages",
-            id="calculate-button",
-            n_clicks=0,
-            style={
-                "display": "block",
-                "margin": "auto",
-                "margin-top": "50px",
-                "font-size": "20px",
-                "background-color": "#84de81",
-            },
-        ),
-        html.Div(
-            id="optimal-voltages-section",
-            children=[
-                html.Label("The optimal voltages are:"),
-                html.Span(id="optimal-voltages", children=""),
-            ],
-            style={
-                "text-align": "center",
-                "font-size": "20px",
-                "margin-top": "20px",
-                "display": "block",
-                "justify-content": "center",
-            },
-        ),
-        html.Div(
-            id="save-file-section",
-            children=[
-                html.Button(
-                    "Download Optimal Voltages",
-                    id="save-optimal-voltages-button",
-                    n_clicks=0,
-                    style={
-                        "textAlign": "center",
-                        "margin": "10px",
-                        "margin-left": "auto",
-                        "margin-right": "auto",
-                        "font-size": "20px",
-                        "background-color": "lightgrey",
-                        "display": "inherit",
-                        "justify-content": "center",
-                        "margin-top": "40px",
-                    },
-                ),
-                dcc.Download(id="download-optimal-voltages"),
-            ],
-            style={"display": "none"},
-        ),
+        dash.page_container,
         dcc.Store(id="loaded-data"),
+        dcc.Store(id="data-viewer-style"),
     ],
     style={},
 )
@@ -291,13 +88,14 @@ class DataDict(TypedDict):
     Output("data-file-name", "children"),
     Output("data-upload-result-children", "style"),
     Output("data-viewer", "style"),
+    Output("data-viewer-style", "data"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     prevent_initial_call=True,
 )
 def read_file(
     contents: str, filename: str
-) -> tuple[DataDict, str, dict[str, str], dict[str, str]]:
+) -> tuple[DataDict, str, dict[str, str], dict[str, str], dict[str, str]]:
     try:
         _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
@@ -316,7 +114,13 @@ def read_file(
             "filename": filename,
         }
 
-        return (output_dict, filename, {"display": "block"}, {"display": "block"})
+        return (
+            output_dict,
+            filename,
+            {"display": "block"},
+            {"display": "block"},
+            {"display": "block"},
+        )
 
     except Exception as e:
         print(e)
@@ -331,7 +135,20 @@ def read_file(
             "There was an error processing this file: " + filename,
             {"display": "block"},
             {"display": "none"},
+            {"display": "none"},
         )
+
+
+@callback(
+    Output("data-viewer", "style", allow_duplicate=True),
+    Input("url", "pathname"),
+    State("data-viewer-style", "data"),
+    prevent_initial_call=True,
+)
+def trigger_on_page_change(url: str, data_viewer_style: dict[str, str]):
+    # returns none by default
+    style = data_viewer_style.get("display", "none")
+    return {"display": style}
 
 
 @callback(
@@ -342,10 +159,11 @@ def read_file(
     State("loaded-data", "data"),
     Input("ag-grid-selector", "value"),
     Input("data-viewer", "style"),
+    Input("url", "pathname"),
     prevent_initial_call=True,
 )
 def change_table(
-    data_dict: DataDict, value: str, style: dict[str, str]
+    data_dict: DataDict, value: str, style: dict[str, str], url: str
 ) -> tuple[
     list[dict[str, str]],
     dict[str, str],
