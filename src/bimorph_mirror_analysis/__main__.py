@@ -116,6 +116,7 @@ def generate_plots(
         centroids = interation_matrix[:, actuator_num]
         plot = InfluenceFunctionPlot(slit_positions, centroids, actuator_num)
         plot.save_plot(output_dir + f"actuator_{actuator_num}_influence_function.png")
+    print(f"influence function plots have been saved to {output_dir}")
 
     # Add in predicted centroid positions using restrained and unrestrained voltage
     # corrections once the other prs are merged
@@ -124,6 +125,7 @@ def generate_plots(
         pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy(),  # type: ignore
     )
     plot.save_plot(output_dir + "mirror_surface_plot.png")
+    print(f"The mirror surface plot has been saved to {output_dir}")
 
 
 @app.callback()
