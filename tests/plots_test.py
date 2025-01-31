@@ -11,11 +11,13 @@ from bimorph_mirror_analysis.plots import (
 
 @pytest.fixture
 def sample_slit_positions():
+    # just any data to plot works
     return np.linspace(0, 10, 100)
 
 
 @pytest.fixture
 def sample_centroids():
+    # just any data to plot works
     return np.sin(np.linspace(0, 10, 100))
 
 
@@ -92,8 +94,10 @@ def test_pencil_beam_scan_plot(raw_data_pivoted: pd.DataFrame):
     lines = plot.ax.get_lines()
     assert len(lines) == 1
     assert np.array_equal(
-        lines[0].get_xdata(), raw_data_pivoted["slit_position_x"].to_numpy()
+        lines[0].get_xdata(),
+        raw_data_pivoted["slit_position_x"].to_numpy(),  # type: ignore
     )
     assert np.array_equal(
-        lines[0].get_ydata(), raw_data_pivoted[f"pencil_beam_scan_{scan_num}"]
+        lines[0].get_ydata(),
+        raw_data_pivoted[f"pencil_beam_scan_{scan_num}"],  # type: ignore
     )
