@@ -48,6 +48,7 @@ def test_mirror_surface_plot(
     sample_slit_positions: np.typing.NDArray[np.float64],
     sample_centroids: np.typing.NDArray[np.float64],
 ):
+    # just change the data for predicted centroids slightly.
     unrestrained_predicted_centroids = sample_centroids + 0.1
     restrained_predicted_centroids = sample_centroids - 0.1
     plot = MirrorSurfacePlot(
