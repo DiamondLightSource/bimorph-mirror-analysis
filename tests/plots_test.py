@@ -67,8 +67,10 @@ def test_mirror_surface_plot(
     assert len(lines) == 3  # Baseline, unrestrained, and restrained
     assert np.array_equal(lines[0].get_xdata(), sample_slit_positions)
     assert np.array_equal(lines[0].get_ydata(), sample_centroids)
+
     assert np.array_equal(lines[1].get_xdata(), sample_slit_positions)
     assert np.array_equal(lines[1].get_ydata(), unrestrained_predicted_centroids)
+
     assert np.array_equal(lines[2].get_xdata(), sample_slit_positions)
     assert np.array_equal(lines[2].get_ydata(), restrained_predicted_centroids)
 
