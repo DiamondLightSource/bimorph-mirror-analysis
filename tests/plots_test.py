@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -6,6 +8,7 @@ from bimorph_mirror_analysis.plots import (
     InfluenceFunctionPlot,
     MirrorSurfacePlot,
     PencilBeamScanPlot,
+    Plot,
 )
 
 
@@ -104,3 +107,11 @@ def test_pencil_beam_scan_plot(raw_data_pivoted: pd.DataFrame):
         lines[0].get_ydata(),
         raw_data_pivoted[f"pencil_beam_scan_{scan_num}"],  # type: ignore
     )
+
+
+def test_save_plot():
+    with patch("bimorph_mirror_analysis.plots.Plot.save_plot") as mock_save_plot:
+        plot = Plot()
+        plot.save_plot("output_directory/filename")
+
+        mock_save_plot.assert_called_once()
