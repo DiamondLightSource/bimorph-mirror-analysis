@@ -28,7 +28,7 @@ def find_voltages(
     if baseline_voltage_scan < -data.shape[1] or baseline_voltage_scan >= data.shape[1]:
         raise IndexError(
             f"baseline_voltage_scan is out of range, it must be between\
-                  {-1*data.shape[1]} and {data.shape[1]-1}"
+                  {-1 * data.shape[1]} and {data.shape[1] - 1}"
         )
 
     responses = np.diff(
