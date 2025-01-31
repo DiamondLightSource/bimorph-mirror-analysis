@@ -110,8 +110,9 @@ def test_pencil_beam_scan_plot(raw_data_pivoted: pd.DataFrame):
 
 
 def test_save_plot():
-    with patch("bimorph_mirror_analysis.plots.Plot.save_plot") as mock_save_plot:
-        plot = Plot()
+    plot = Plot()
+    with (
+        patch.object(plot.fig, "savefig") as mock_savefig,
+    ):
         plot.save_plot("output_directory/filename")
-
-        mock_save_plot.assert_called_once()
+        mock_savefig.assert_called_once()
