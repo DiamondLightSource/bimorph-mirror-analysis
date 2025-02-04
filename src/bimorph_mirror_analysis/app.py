@@ -31,9 +31,18 @@ nav = dbc.Nav(
     style={"margin": "auto", "display": "block", "align-items": "center"},
 )
 
+nav = dcc.Tabs(
+    id="pages",
+    children=[
+        dcc.Tab(label=page["name"], value=page["relative_path"])
+        for page in dash.page_registry.values()
+    ],
+    value="/",
+)
+
 app.layout = html.Div(
     children=[
-        dcc.Location(id="url", refresh=False),
+        dcc.Location(id="url", refresh="callback-nav"),
         html.H1("Bimorph Mirror Analysis", style={"textAlign": "center"}),
         dcc.Upload(
             html.Button(
@@ -75,6 +84,15 @@ app.layout = html.Div(
     ],
     style={},
 )
+
+
+@callback(
+    Output("url", "href"),
+    Input("pages", "value"),
+    prevent_initial_call=True,
+)
+def update_url(value: str) -> str:
+    return value
 
 
 class DataDict(TypedDict):
