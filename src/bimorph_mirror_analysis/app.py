@@ -19,21 +19,16 @@ external_stylesheets = [
 ]
 app = Dash(__name__, external_stylesheets=external_stylesheets, use_pages=True)  # type:ignore
 
-nav = dbc.Navbar(
-    dbc.Nav(
-        [
-            dbc.NavItem(
-                dbc.NavLink(page["name"], active="exact", href=page["relative_path"])
-            )
-            for page in dash.page_registry.values()  # type: ignore,
-        ],
-        pills=True,
-        # fill=True,
-        # className="border my-4",
-        vertical=False,
-        style={"margin": "auto"},
-    ),
-    style={"margin": "auto"},
+nav = dbc.Nav(
+    [
+        dbc.NavItem(dbc.NavLink(page["name"], active=True, href=page["relative_path"]))
+        for page in dash.page_registry.values()  # type: ignore,
+    ],
+    pills=True,
+    # fill=True,
+    # className="border my-4",
+    vertical=False,
+    style={"margin": "auto", "display": "block", "align-items": "center"},
 )
 
 app.layout = html.Div(
