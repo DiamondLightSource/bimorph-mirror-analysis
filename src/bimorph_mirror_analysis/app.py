@@ -3,6 +3,7 @@ import io
 from typing import Any, TypedDict
 
 import dash
+import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 from dash import Dash, Input, Output, State, callback, dcc, html  # type: ignore
@@ -18,6 +19,22 @@ external_stylesheets = [
 ]
 app = Dash(__name__, external_stylesheets=external_stylesheets, use_pages=True)  # type:ignore
 
+nav = dbc.Navbar(
+    dbc.Nav(
+        [
+            dbc.NavItem(
+                dbc.NavLink(page["name"], active="exact", href=page["relative_path"])
+            )
+            for page in dash.page_registry.values()  # type: ignore,
+        ],
+        pills=True,
+        # fill=True,
+        # className="border my-4",
+        vertical=False,
+        style={"margin": "auto"},
+    ),
+    style={"margin": "auto"},
+)
 
 app.layout = html.Div(
     children=[
@@ -56,20 +73,10 @@ app.layout = html.Div(
                 style={"display": "none"},
             ),
         ),
-        html.Div(
-            [
-                html.Div(
-                    dcc.Link(
-                        f"{page['name']} - {page['path']}",
-                        href=page["relative_path"],  # type: ignore
-                    )
-                )
-                for page in dash.page_registry.values()  # type: ignore
-            ]
-        ),
+        nav,
         dash.page_container,
         dcc.Store(id="loaded-data"),
-        dcc.Store(id="data-viewer-style"),
+        dcc.Store(id="data-viewer-style", data={"display": "none"}),
     ],
     style={},
 )
@@ -87,15 +94,11 @@ class DataDict(TypedDict):
     Output("loaded-data", "data"),
     Output("data-file-name", "children"),
     Output("data-upload-result-children", "style"),
-    Output("data-viewer", "style"),
-    Output("data-viewer-style", "data"),
     Input("upload-data", "contents"),
     State("upload-data", "filename"),
     prevent_initial_call=True,
 )
-def read_file(
-    contents: str, filename: str
-) -> tuple[DataDict, str, dict[str, str], dict[str, str], dict[str, str]]:
+def read_file(contents: str, filename: str) -> tuple[DataDict, str, dict[str, str]]:
     try:
         _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
@@ -118,8 +121,6 @@ def read_file(
             output_dict,
             filename,
             {"display": "block"},
-            {"display": "block"},
-            {"display": "block"},
         )
 
     except Exception as e:
@@ -134,9 +135,20 @@ def read_file(
             ),
             "There was an error processing this file: " + filename,
             {"display": "block"},
-            {"display": "none"},
-            {"display": "none"},
         )
+
+
+@callback(
+    Output("data-viewer", "style", allow_duplicate=True),
+    Output("data-viewer-style", "data"),
+    Input("loaded-data", "data"),
+    prevent_initial_call=True,
+)
+def trigger_on_data_upload(data: str) -> tuple[dict[str, str], dict[str, str]]:
+    return (
+        {"display": "block"},
+        {"display": "block"},
+    )
 
 
 @callback(
@@ -147,6 +159,7 @@ def read_file(
 )
 def trigger_on_page_change(url: str, data_viewer_style: dict[str, str]):
     # returns none by default
+    print(f"switched to {url}")
     style = data_viewer_style.get("display", "none")
     return {"display": style}
 
