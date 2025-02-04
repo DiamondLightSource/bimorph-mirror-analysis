@@ -10,6 +10,21 @@ def process_pencil_beam_scans(
     voltage_increment: float,
     baseline_voltage_scan: int = 0,
 ) -> tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]]:
+    """Calculate the interaction matrix and desired corrections for the given pencil\
+ beam scans.
+
+    Args:
+        data: A matrix of beamline centroid data, with rows of different slit positions
+            and columns of pencil beam scans at different actuator voltages
+        voltage_increment: The voltage increment applied to the actuators between \
+pencil beam scans
+        baseline_voltage_scan: The pencil beam scan to use as the baseline for the
+            centroid calculation. 0 is the first scan, 1 is the second scan, etc.
+            -1 can be used for the last scan and -2 for the second to last scan etc.
+
+    Returns:
+        A tuple containing the interaction matrix and desired corrections.
+    """
     # calculate the response of each actuator by subtracting previous pencil beam
     responses = np.diff(data, axis=1)
 
