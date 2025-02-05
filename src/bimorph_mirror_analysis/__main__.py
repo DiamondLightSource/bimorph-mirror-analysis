@@ -59,6 +59,14 @@ _optimal_voltages_{date}.csv"
 
 
 def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
+    """Calculate the optimal voltages for the bimorph mirror actuators.
+
+    Args:
+        file_path: The path to the csv file to be read.
+
+    Returns:
+        The optimal voltages for the bimorph mirror actuators.
+    """
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
     # numpy array of pencil beam scans
     data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
