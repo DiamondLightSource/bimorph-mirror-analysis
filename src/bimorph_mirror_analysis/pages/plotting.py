@@ -4,7 +4,7 @@ import dash
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from dash import Input, Output, State, callback, dcc, html
+from dash import Input, Output, callback, dcc, html
 
 dash.register_page(__name__)  # type: ignore
 
@@ -12,13 +12,27 @@ layout = html.Div(
     [
         dcc.Tabs(
             id="graph-type",
+            # primary is the bar above the selected tab
+            # background is the main colour of the unselected tabs
+            # border is the border of unselected tabs
+            colors={"primary": "#000000", "background": "#cad4ff", "border": "#cad4ff"},
             children=[
-                dcc.Tab(label="beamline scans", value="beamline-scan"),
-                dcc.Tab(label="influcence functions", value="influence-function"),
-                dcc.Tab(label="expected correction", value="expected-correction"),
+                dcc.Tab(
+                    label="beamline scans", value="beamline-scan", className="plot-tabs"
+                ),
+                dcc.Tab(
+                    label="influcence functions",
+                    value="influence-function",
+                    className="plot-tabs",
+                ),
+                dcc.Tab(
+                    label="expected correction",
+                    value="expected-correction",
+                    className="plot-tabs",
+                ),
             ],
             value="beamline-scan",
-            # style={"width": "60%", "margin": "auto", "margin-top": "20px"},
+            className="plot-tabs-holder",
         ),
         dcc.Dropdown(
             id="graph-selector",
@@ -152,7 +166,7 @@ layout = html.Div(
             id="graph",
             style={"display": "block", "margin": "auto", "height": "70vh"},
         ),
-    ]
+    ],
 )
 
 
