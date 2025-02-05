@@ -223,3 +223,31 @@ pencil beam scans
     )
 
     return np.round(result.x[1:], decimals=2)  # first item is not a voltage
+
+
+def check_voltages_fit_constraints(
+    voltages: np.typing.NDArray[np.float64],
+    voltage_range: tuple[int, int],
+    max_consecutive_voltage_difference: int,
+) -> bool:
+    """Check if the supplied voltages fit the given constraints.
+
+    Args:
+        voltages: The voltages to check.
+        voltage_range: The minimum and maximum values a voltage can take.
+        max_consecutive_voltage_difference: The maximum voltage difference between two
+            consecutive actuators on the bimorph mirror.
+
+    Returns:
+        A boolean indicating if the voltages fit the constraints.
+    """
+    # just check highest and lowest voltages
+    within_max_and_min = (
+        min(voltages) >= voltage_range[0] and max(voltages) <= voltage_range[1]
+    )
+
+    diffs = np.diff(voltages)
+    within_max_diff = np.all(diffs <= max_consecutive_voltage_difference)
+
+    # bool required as np.all returns np.bool
+    return bool(within_max_and_min and within_max_diff)
