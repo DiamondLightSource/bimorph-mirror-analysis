@@ -85,9 +85,6 @@ def version_callback(value: bool):
 @app.command(name=None)
 def generate_plots(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
-    increment: float = typer.Argument(
-        help="The voltage increment applied to the actuators between pencil beam scans"
-    ),
     output_dir: str = typer.Argument(
         help="The directory to save the output plots to.",
     ),
@@ -100,7 +97,7 @@ def generate_plots(
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, *_ = read_bluesky_plan_output(file_path)
+    pivoted, _, increment = read_bluesky_plan_output(file_path)
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
