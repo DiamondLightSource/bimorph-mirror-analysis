@@ -23,7 +23,7 @@ def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
             100,
         )
         mock_find_voltage_corrections.side_effect = find_voltage_corrections
-        voltages = calculate_optimal_voltages("input_file")
+        voltages = calculate_optimal_voltages("input_file", (-1000, 1000), 500)
         voltages = np.round(voltages, 2)
         # assert correct voltages calculated
         np.testing.assert_almost_equal(voltages, np.array([72.14, 50.98, 18.59]))

@@ -34,16 +34,30 @@ def test_outpath_option(outpath: str | bool):
                 [
                     "calculate-voltages",
                     "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
                     "--output-path",
                     f"{outpath}",
                 ],
             )
         else:
             result = runner.invoke(
-                app, ["calculate-voltages", "tests/data/raw_data.csv"]
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
             )
         mock_np_save.assert_called_once()
-        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        mock_calculate_optimal_voltages.assert_called_with(
+            "tests/data/raw_data.csv",
+            voltage_range=(-1000, 1000),
+            max_consecutive_voltage_difference=500,
+        )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
@@ -75,6 +89,9 @@ def test_human_readable_option(human_readable: str | bool):
                 [
                     "calculate-voltages",
                     "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
                     "--human-readable",
                     f"{human_readable}",
                 ],
@@ -82,10 +99,21 @@ def test_human_readable_option(human_readable: str | bool):
             mock_pivoted.to_csv.assert_called_once()
         else:
             result = runner.invoke(
-                app, ["calculate-voltages", "tests/data/raw_data.csv"]
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
             )
         mock_np_save.assert_called_once()
-        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        mock_calculate_optimal_voltages.assert_called_with(
+            "tests/data/raw_data.csv",
+            voltage_range=(-1000, 1000),
+            max_consecutive_voltage_difference=500,
+        )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
