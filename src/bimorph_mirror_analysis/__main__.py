@@ -137,7 +137,7 @@ on the bimorph mirror."
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    pivoted, _, increment = read_bluesky_plan_output(file_path)
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
