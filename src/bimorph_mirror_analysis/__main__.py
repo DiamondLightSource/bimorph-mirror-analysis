@@ -115,11 +115,18 @@ def version_callback(value: bool):
         raise typer.Exit()
 
 
-@app.command(name=None)
+@app.command(name=None, context_settings={"ignore_unknown_options": True})
 def generate_plots(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
     output_dir: str = typer.Argument(
         help="The directory to save the output plots to.",
+    ),
+    voltage_range: tuple[int, int] = typer.Argument(
+        help="The minimum and maximum values a voltage can take."
+    ),
+    max_consecutive_voltage_difference: int = typer.Argument(
+        help="The maximum voltage difference allowed between two consecutive actuators\
+on the bimorph mirror."
     ),
     baseline_voltage_scan: int = typer.Option(
         help="The index of the pencil beam scan which had no increment applied.",
@@ -130,7 +137,7 @@ def generate_plots(
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, _, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
@@ -158,9 +165,30 @@ def generate_plots(
 
     # Add in predicted centroid positions using restrained and unrestrained voltage
     # corrections once the other prs are merged
+    unrestrained_voltage_corrections = find_voltage_corrections(
+        data, increment, baseline_voltage_scan=baseline_voltage_scan
+    )
+    restrained_voltage_corrections = find_voltage_corrections_with_restraints(
+        data,
+        increment,
+        voltage_range,
+        max_consecutive_voltage_difference,
+        baseline_voltage_scan=baseline_voltage_scan,
+    )
+    unrestrained_centroid_corrections = np.matmul(
+        interation_matrix, unrestrained_voltage_corrections
+    )
+    restrained_centroid_corrections = np.matmul(
+        interation_matrix, restrained_voltage_corrections
+    )
+
+    baseline_centroids = pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy()  # type: ignore
+
     plot = MirrorSurfacePlot(
         slit_positions,
-        pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy(),  # type: ignore
+        baseline_centroids,  # type: ignore
+        baseline_centroids + unrestrained_centroid_corrections,
+        baseline_centroids + restrained_centroid_corrections,
     )
     plot.save_plot(output_dir + "mirror_surface_plot.png")
     print(f"The mirror surface plot has been saved to {output_dir}")
