@@ -5,7 +5,11 @@ import datetime
 import numpy as np
 import typer
 
-from bimorph_mirror_analysis.maths import find_voltage_corrections
+from bimorph_mirror_analysis.maths import (
+    check_voltages_fit_constraints,
+    find_voltage_corrections,
+    find_voltage_corrections_with_restraints,
+)
 from bimorph_mirror_analysis.plots import (
     InfluenceFunctionPlot,
     MirrorSurfacePlot,
@@ -23,6 +27,13 @@ app = typer.Typer()
 @app.command(name=None)
 def calculate_voltages(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
+    voltage_range: tuple[int, int] = typer.Argument(
+        help="The minimum and maximum values a voltage can take."
+    ),
+    max_consecutive_voltage_difference: int = typer.Argument(
+        help="The maximum voltage difference allowed between two consecutive actuators\
+on the bimorph mirror."
+    ),
     output_path: str | None = typer.Option(
         None,
         help="The path to save the output optimal voltages to, optional.",
@@ -39,7 +50,11 @@ If the --human-readable flag is not supplied, the table is not saved.",
         pivoted.to_csv(human_readable)
         print(f"The human-readable file has been written to {human_readable}")
 
-    optimal_voltages = calculate_optimal_voltages(file_path)
+    optimal_voltages = calculate_optimal_voltages(
+        file_path,
+        voltage_range=voltage_range,
+        max_consecutive_voltage_difference=max_consecutive_voltage_difference,
+    )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
 
@@ -58,7 +73,11 @@ _optimal_voltages_{date}.csv"
     )
 
 
-def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
+def calculate_optimal_voltages(
+    file_path: str,
+    voltage_range: tuple[int, int],
+    max_consecutive_voltage_difference: int,
+) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
     Args:
@@ -73,7 +92,21 @@ def calculate_optimal_voltages(file_path: str) -> np.typing.NDArray[np.float64]:
 
     voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
     optimal_voltages = initial_voltages + voltage_adjustments
-    return optimal_voltages  # type: ignore
+    if check_voltages_fit_constraints(
+        optimal_voltages, voltage_range, max_consecutive_voltage_difference
+    ):
+        return optimal_voltages
+
+    else:
+        voltage_adjustments = find_voltage_corrections_with_restraints(
+            data,  # type: ignore
+            increment,
+            voltage_range=voltage_range,
+            max_consecutive_voltage_difference=max_consecutive_voltage_difference,
+        )  # type: ignore
+        optimal_voltages = initial_voltages + voltage_adjustments
+
+        return optimal_voltages  # type: ignore
 
 
 def version_callback(value: bool):
