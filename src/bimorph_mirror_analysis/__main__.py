@@ -24,7 +24,7 @@ __all__ = ["main"]
 app = typer.Typer()
 
 
-@app.command(name=None)
+@app.command(name=None, context_settings={"ignore_unknown_options": True})
 def calculate_voltages(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
     voltage_range: tuple[int, int] = typer.Argument(
