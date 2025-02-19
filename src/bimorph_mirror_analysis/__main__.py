@@ -34,6 +34,10 @@ def calculate_voltages(
         help="The maximum voltage difference allowed between two consecutive actuators\
 on the bimorph mirror."
     ),
+    baseline_voltage_scan: int = typer.Option(
+        help="The index of the pencil beam scan which had no increment applied.",
+        default=0,
+    ),
     output_path: str | None = typer.Option(
         None,
         help="The path to save the output optimal voltages to, optional.",
@@ -54,6 +58,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
         file_path,
         voltage_range=voltage_range,
         max_consecutive_voltage_difference=max_consecutive_voltage_difference,
+        baseline_voltage_scan=baseline_voltage_scan,
     )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
@@ -77,6 +82,7 @@ def calculate_optimal_voltages(
     file_path: str,
     voltage_range: tuple[int, int],
     max_consecutive_voltage_difference: int,
+    baseline_voltage_scan: int = 0,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
@@ -90,7 +96,14 @@ def calculate_optimal_voltages(
     # numpy array of pencil beam scans
     data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
-    voltage_adjustments = find_voltage_corrections(data, increment)  # type: ignore
+    voltage_adjustments = find_voltage_corrections(
+        data,  # type: ignore
+        increment,
+        baseline_voltage_scan=baseline_voltage_scan,
+    )
+    print(initial_voltages)
+    print(increment)
+    print(voltage_adjustments)
     optimal_voltages = initial_voltages + voltage_adjustments
     if check_voltages_fit_constraints(
         optimal_voltages, voltage_range, max_consecutive_voltage_difference
@@ -103,6 +116,7 @@ def calculate_optimal_voltages(
             increment,
             voltage_range=voltage_range,
             max_consecutive_voltage_difference=max_consecutive_voltage_difference,
+            baseline_voltage_scan=baseline_voltage_scan,
         )  # type: ignore
         optimal_voltages = initial_voltages + voltage_adjustments
 
