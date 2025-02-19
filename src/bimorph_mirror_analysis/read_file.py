@@ -23,7 +23,11 @@ def read_bluesky_plan_output(
     data = data.apply(pd.to_numeric, errors="coerce")  # type: ignore
 
     voltage_cols = [col for col in data.columns if "voltage" in col]
-    initial_voltages = data.loc[baseline_voltage_scan_index, voltage_cols].to_numpy()  # type: ignore
+    if baseline_voltage_scan_index >= 0:
+        baseline_idx = baseline_voltage_scan_index
+    else:
+        baseline_idx = len(data) + baseline_voltage_scan_index - 1
+    initial_voltages = data.loc[baseline_idx, voltage_cols].to_numpy()  # type: ignore
     # voltages from any other scan will have a change in the voltages
     num_slit_positions = len(data) // len(voltage_cols)
     if baseline_voltage_scan_index == 0:
