@@ -135,7 +135,7 @@ def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
             "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
         ) as mock_read_bluesky_plan_output,
     ):
-        mock_read_bluesky_plan_output.return_value = [raw_data_pivoted, 0, 100]
+        mock_read_bluesky_plan_output.return_value = [raw_data_pivoted, [0, 0, 0], 100]
         _ = runner.invoke(
             app,
             [
