@@ -101,9 +101,6 @@ def calculate_optimal_voltages(
         increment,
         baseline_voltage_scan=baseline_voltage_scan,
     )
-    print(initial_voltages)
-    print(increment)
-    print(voltage_adjustments)
     optimal_voltages = initial_voltages + voltage_adjustments
     if check_voltages_fit_constraints(
         optimal_voltages, voltage_range, max_consecutive_voltage_difference
