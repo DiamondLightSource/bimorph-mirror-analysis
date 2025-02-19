@@ -5,7 +5,11 @@ import pandas as pd
 import pytest
 
 from bimorph_mirror_analysis.__main__ import calculate_optimal_voltages
-from bimorph_mirror_analysis.maths import find_voltage_corrections
+from bimorph_mirror_analysis.maths import (
+    check_voltages_fit_constraints,
+    find_voltage_corrections,
+    find_voltage_corrections_with_restraints,
+)
 
 
 def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
@@ -89,3 +93,57 @@ def test_calculate_optimal_voltages(
         np.testing.assert_almost_equal(
             voltages, initial_voltages + expected_corrections, decimal=2
         )
+
+
+@pytest.mark.parametrize(
+    "actuator_data",
+    [
+        [
+            "tests/data/8_actuator_data.txt",
+            "tests/data/8_actuator_output.txt",
+            "tests/data/8_actuator_initial_voltages.txt",
+        ],
+        [
+            "tests/data/16_actuator_data.txt",
+            "tests/data/16_actuator_output.txt",
+            "tests/data/16_actuator_initial_voltages.txt",
+        ],
+    ],
+    indirect=True,
+)
+def test_calculate_optimal_voltages_with_restrictions(
+    actuator_data: tuple[
+        np.typing.NDArray[np.float64],
+        np.typing.NDArray[np.float64],
+        np.typing.NDArray[np.float64],
+    ],
+):
+    with (
+        patch(
+            "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
+        ) as mock_read_bluesky_plan_output,
+        patch(
+            "bimorph_mirror_analysis.__main__.find_voltage_corrections_with_restraints"
+        ) as mock_find_voltage_corrections_with_restraints,
+    ):
+        mock_find_voltage_corrections_with_restraints.side_effect = (
+            find_voltage_corrections_with_restraints
+        )
+        data, _, initial_voltages = actuator_data
+        mock_read_bluesky_plan_output.return_value = (
+            pd.DataFrame(
+                np.hstack(
+                    [np.ones((data.shape[0], 1)), data]
+                )  # add blank column in place of slit position
+            ),
+            initial_voltages,
+            -100,
+        )
+        voltages = calculate_optimal_voltages(
+            "data", (-1000, 1000), 50, baseline_voltage_scan=-1
+        )
+
+        # assert correct voltages calculated
+        voltages = np.round(voltages, 2)
+        mock_find_voltage_corrections_with_restraints.assert_called()
+        assert check_voltages_fit_constraints(voltages, (-1000, 1000), 50)
