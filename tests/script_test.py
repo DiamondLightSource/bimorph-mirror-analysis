@@ -86,11 +86,11 @@ def test_find_voltage_corrections_with_restraints_correct_output(
         np.typing.NDArray[np.float64],
     ],
 ):
-    data, expected_corrections, _ = actuator_data
+    data, expected_corrections, initial_voltages = actuator_data
     v = -100
     np.testing.assert_almost_equal(
         find_voltage_corrections_with_restraints(
-            data, v, (-1000, 1000), 500, baseline_voltage_scan=-1
+            data, v, initial_voltages, (-1000, 1000), 500, baseline_voltage_scan=-1
         ),
         expected_corrections,
         decimal=1,
@@ -115,10 +115,10 @@ def test_find_voltage_corrections_with_restraints_index_error_throw(
         np.typing.NDArray[np.float64],
     ],
 ):
-    data, *_ = actuator_data
+    data, _, initial_voltages = actuator_data
     with pytest.raises(IndexError):
         find_voltage_corrections_with_restraints(
-            data, -100, (-1000, 1000), 500, baseline_voltage_scan=12
+            data, -100, initial_voltages, (-1000, 1000), 500, baseline_voltage_scan=12
         )
 
 
