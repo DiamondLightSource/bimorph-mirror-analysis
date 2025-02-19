@@ -111,8 +111,9 @@ def calculate_optimal_voltages(
         voltage_adjustments = find_voltage_corrections_with_restraints(
             data,  # type: ignore
             increment,
-            voltage_range=voltage_range,
-            max_consecutive_voltage_difference=max_consecutive_voltage_difference,
+            initial_voltages,
+            voltage_range,
+            max_consecutive_voltage_difference,
             baseline_voltage_scan=baseline_voltage_scan,
         )  # type: ignore
         optimal_voltages = initial_voltages + voltage_adjustments
@@ -148,7 +149,7 @@ on the bimorph mirror."
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, _, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
@@ -182,6 +183,7 @@ on the bimorph mirror."
     restrained_voltage_corrections = find_voltage_corrections_with_restraints(
         data,
         increment,
+        initial_voltages,
         voltage_range,
         max_consecutive_voltage_difference,
         baseline_voltage_scan=baseline_voltage_scan,
