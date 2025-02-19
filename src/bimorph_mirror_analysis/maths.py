@@ -144,18 +144,24 @@ class Constraint(TypedDict):
 
 
 def generate_minimize_constraints(
-    int_mat: np.typing.NDArray[np.float64], max_consecutive_voltage_difference: int
+    int_mat: np.typing.NDArray[np.float64],
+    max_consecutive_voltage_difference: int,
+    initial_voltages: np.typing.NDArray[np.float64],
 ) -> list[Constraint]:
     # build list of contraints objects
     constraints: list[Constraint] = []
-    for i in range(int_mat.shape[1] - 1):
+    for i in range(len(initial_voltages) - 1):
 
         def func(
             voltages: np.typing.NDArray[np.float64],
             max_diff: int = max_consecutive_voltage_difference,
             idx: int = i,
         ) -> float:
-            return max_diff - abs(voltages[idx] - voltages[idx + 1])
+            # voltages has an extra element at the start so idx always needs to be +1
+            return max_diff - abs(
+                (initial_voltages[idx] + voltages[idx + 1])
+                - (initial_voltages[idx + 1] + voltages[idx + 2])
+            )
 
         constraints.append({"type": "ineq", "fun": func})
 
@@ -165,6 +171,7 @@ def generate_minimize_constraints(
 def find_voltage_corrections_with_restraints(
     data: np.typing.NDArray[np.float64],
     voltage_increment: float,
+    initial_voltages: np.typing.NDArray[np.float64],
     voltage_range: tuple[int, int],
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
@@ -181,6 +188,7 @@ def find_voltage_corrections_with_restraints(
             and columns of pencil beam scans at different actuator voltages
         voltage_increment: The voltage increment applied to the actuators between \
 pencil beam scans
+        initial_voltages: The initial voltages of the actuators in the baseline scan
         voltage_range: The minimum and maximum values a voltage can take.
         max_consecutive_voltage_difference: The maximum voltage difference between two
             consecutive actuators on the bimorph mirror.
@@ -205,10 +213,13 @@ pencil beam scans
     # set initial guess voltages to all 1s
     initial_guess = np.ones(interaction_matrix.shape[1])
 
-    bounds = [voltage_range for _ in range(interaction_matrix.shape[1])]
+    # first item is for the constant term
+    bounds = [voltage_range] + [
+        (voltage_range[0] - i, voltage_range[1] - i) for i in initial_voltages
+    ]
 
     constraints = generate_minimize_constraints(
-        interaction_matrix, max_consecutive_voltage_difference
+        interaction_matrix, max_consecutive_voltage_difference, initial_voltages
     )
 
     # minimise the objective function
