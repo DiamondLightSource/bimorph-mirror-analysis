@@ -28,7 +28,8 @@ app = typer.Typer()
 def calculate_voltages(
     file_path: str = typer.Argument(help="The path to the csv file to be read."),
     voltage_range: tuple[int, int] = typer.Argument(
-        help="The minimum and maximum values a voltage can take."
+        help="The minimum and maximum values a voltage can take. expects two integers\
+ separated by a space"
     ),
     max_consecutive_voltage_difference: int = typer.Argument(
         help="The maximum voltage difference allowed between two consecutive actuators\
