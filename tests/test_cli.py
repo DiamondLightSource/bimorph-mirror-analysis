@@ -34,16 +34,31 @@ def test_outpath_option(outpath: str | bool):
                 [
                     "calculate-voltages",
                     "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
                     "--output-path",
                     f"{outpath}",
                 ],
             )
         else:
             result = runner.invoke(
-                app, ["calculate-voltages", "tests/data/raw_data.csv"]
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
             )
         mock_np_save.assert_called_once()
-        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        mock_calculate_optimal_voltages.assert_called_with(
+            "tests/data/raw_data.csv",
+            voltage_range=(-1000, 1000),
+            max_consecutive_voltage_difference=500,
+            baseline_voltage_scan=0,
+        )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
@@ -75,6 +90,9 @@ def test_human_readable_option(human_readable: str | bool):
                 [
                     "calculate-voltages",
                     "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
                     "--human-readable",
                     f"{human_readable}",
                 ],
@@ -82,11 +100,70 @@ def test_human_readable_option(human_readable: str | bool):
             mock_pivoted.to_csv.assert_called_once()
         else:
             result = runner.invoke(
-                app, ["calculate-voltages", "tests/data/raw_data.csv"]
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
             )
         mock_np_save.assert_called_once()
-        mock_calculate_optimal_voltages.assert_called_with("tests/data/raw_data.csv")
+        mock_calculate_optimal_voltages.assert_called_with(
+            "tests/data/raw_data.csv",
+            voltage_range=(-1000, 1000),
+            max_consecutive_voltage_difference=500,
+            baseline_voltage_scan=0,
+        )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+
+
+@pytest.mark.parametrize("output_dir", ["outdir", "outdir/"])
+def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
+    with (
+        patch(
+            "bimorph_mirror_analysis.__main__.InfluenceFunctionPlot.save_plot"
+        ) as mock_InfluenceFunctionPlot_save_plot,
+        patch(
+            "bimorph_mirror_analysis.__main__.MirrorSurfacePlot.save_plot"
+        ) as mock_MirrorSurfacePlot_save_plot,
+        patch(
+            "bimorph_mirror_analysis.__main__.PencilBeamScanPlot.save_plot"
+        ) as mock_PencilBeamScanPlot_save_plot,
+        patch(
+            "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
+        ) as mock_read_bluesky_plan_output,
+    ):
+        mock_read_bluesky_plan_output.return_value = [raw_data_pivoted, [0, 0, 0], 100]
+        _ = runner.invoke(
+            app,
+            [
+                "generate-plots",
+                "input.csv",
+                output_dir,
+                "-1000",
+                "1000",
+                "500",
+                "--baseline-voltage-scan",
+                "0",
+            ],
+        )
+        # assert that the slash is added if it is missing
+        if output_dir[-1] != "/":
+            mock_MirrorSurfacePlot_save_plot.assert_called_once_with(
+                f"{output_dir}/mirror_surface_plot.png"
+            )
+        # assert that slash not added when present
+        else:
+            mock_MirrorSurfacePlot_save_plot.assert_called_once_with(
+                f"{output_dir}mirror_surface_plot.png"
+            )
+
+        mock_read_bluesky_plan_output.assert_called_once()
+        assert mock_PencilBeamScanPlot_save_plot.call_count == 4
+        assert mock_InfluenceFunctionPlot_save_plot.call_count == 3
+        mock_MirrorSurfacePlot_save_plot.assert_called_once()
 
 
 def test_cli_version():
