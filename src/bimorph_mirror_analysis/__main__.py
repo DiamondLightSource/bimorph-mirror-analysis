@@ -121,10 +121,10 @@ def calculate_optimal_voltages(
             voltage_range,
             max_consecutive_voltage_difference,
             baseline_voltage_scan=baseline_voltage_scan,
-        )  # type: ignore
+        )
         optimal_voltages = initial_voltages + voltage_adjustments
 
-        return optimal_voltages  # type: ignore
+        return optimal_voltages
 
 
 def version_callback(value: bool):
