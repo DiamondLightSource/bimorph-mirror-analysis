@@ -152,14 +152,14 @@ def generate_minimize_constraints(
     for i in range(len(initial_voltages) - 1):
 
         def func(
-            voltages: np.typing.NDArray[np.float64],
+            voltage_adjustments: np.typing.NDArray[np.float64],
             max_diff: int = max_consecutive_voltage_difference,
             idx: int = i,
         ) -> float:
             # voltages has an extra element at the start so idx always needs to be +1
             return max_diff - abs(
-                (initial_voltages[idx] + voltages[idx + 1])
-                - (initial_voltages[idx + 1] + voltages[idx + 2])
+                (initial_voltages[idx] + voltage_adjustments[idx + 1])
+                - (initial_voltages[idx + 1] + voltage_adjustments[idx + 2])
             )
 
         constraints.append({"type": "ineq", "fun": func})
