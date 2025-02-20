@@ -144,7 +144,6 @@ class Constraint(TypedDict):
 
 
 def generate_minimize_constraints(
-    int_mat: np.typing.NDArray[np.float64],
     max_consecutive_voltage_difference: int,
     initial_voltages: np.typing.NDArray[np.float64],
 ) -> list[Constraint]:
@@ -219,7 +218,7 @@ pencil beam scans
     ]
 
     constraints = generate_minimize_constraints(
-        interaction_matrix, max_consecutive_voltage_difference, initial_voltages
+        max_consecutive_voltage_difference, initial_voltages
     )
 
     # minimise the objective function
