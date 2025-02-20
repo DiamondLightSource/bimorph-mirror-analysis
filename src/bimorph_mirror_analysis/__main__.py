@@ -88,7 +88,12 @@ def calculate_optimal_voltages(
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
     Args:
-        file_path: The path to the csv file to be read.
+        file_path: The path to the csv file to be read
+        voltage_range: The minimum and maximum values a voltage can take
+        max_consecutive_voltage_difference: The maximum voltage difference allowed\
+ between two consecutive actuators
+        baseline_voltage_scan: The index of the pencil beam scan which had no increment\
+ applied
 
     Returns:
         The optimal voltages for the bimorph mirror actuators.
