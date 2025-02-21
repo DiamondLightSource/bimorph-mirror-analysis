@@ -155,11 +155,17 @@ def raw_data_pivoted() -> pd.DataFrame:
 @pytest.fixture
 def actuator_data(
     request: pytest.FixtureRequest,
-) -> tuple[np.typing.NDArray[np.float64], np.typing.NDArray[np.float64]]:
-    input_path, output_path = request.param
+) -> tuple[
+    np.typing.NDArray[np.float64],
+    np.typing.NDArray[np.float64],
+    np.typing.NDArray[np.float64],
+]:
+    input_path, output_path, initial_voltages_path = request.param
     data = np.loadtxt(input_path, delimiter=",")
-    expected_output = np.loadtxt(output_path, delimiter=",")
-    return data, expected_output
+    expected_corrections = np.loadtxt(output_path, delimiter=",")
+    initial_voltages = np.loadtxt(initial_voltages_path, delimiter=",")
+    return data, expected_corrections, initial_voltages
+
 
 
 @pytest.fixture

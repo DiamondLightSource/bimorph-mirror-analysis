@@ -17,6 +17,20 @@ def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
         mock_read_csv.assert_called()
 
 
+def test_read_raw_data_baseline_last_scan(
+    raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame
+):
+    with patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv:
+        mock_read_csv.return_value = raw_data
+        pivoted, initial_voltages, increment = read_bluesky_plan_output(
+            "input_path", baseline_voltage_scan_index=-1
+        )
+        pd.testing.assert_frame_equal(pivoted, raw_data_pivoted)
+        np.testing.assert_array_equal(initial_voltages, np.array([100, 100, 100]))
+        np.testing.assert_equal(increment, np.float64(-100.0))
+        mock_read_csv.assert_called()
+
+
 @pytest.mark.xfail(
     reason="This test is expected to fail, the incrememnt should be 100, not 101"
 )
