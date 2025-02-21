@@ -127,7 +127,7 @@ def test_export_data_as_csv(n_clicks: int | None):
 
 
 def test_calculate_optimal_voltages(data_dict: DataDict):
-    voltages = calculate_optimal_voltages(data_dict, -1000, 1000, 500, 0)
+    voltages = calculate_optimal_voltages(data_dict, (-1000, 1000), 500, 0)
     voltages = np.round(voltages, 2)
     # assert correct voltages calculated
     np.testing.assert_almost_equal(voltages, np.array([72.14, 50.98, 18.59]))

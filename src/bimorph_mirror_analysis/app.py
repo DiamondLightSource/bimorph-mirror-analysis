@@ -8,6 +8,8 @@ import pandas as pd
 from dash import Dash, Input, Output, State, callback, dcc, html  # type: ignore
 
 from bimorph_mirror_analysis.maths import (
+    check_voltages_fit_constraints,
+    find_voltage_corrections,
     find_voltage_corrections_with_restraints,
 )
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
@@ -385,11 +387,23 @@ def export_data_as_csv(n_clicks: int | None) -> bool:
 
 def calculate_optimal_voltages(
     data_dict: DataDict,
-    min_v: int,
-    max_v: int,
-    max_diff: int,
+    voltage_range: tuple[int, int],
+    max_consecutive_voltage_difference: int,
     baseline_voltage_scan_idx: int,
 ) -> np.typing.NDArray[np.float64]:
+    """Calculate the optimal voltages for the bimorph mirror actuators.
+
+    Args:
+        data_dict: The DataDict of uploaded data
+        voltage_range: The minimum and maximum values a voltage can take
+        max_consecutive_voltage_difference: The maximum voltage difference allowed\
+ between two consecutive actuators
+        baseline_voltage_scan: The index of the pencil beam scan which had no increment\
+ applied
+
+    Returns:
+        The optimal voltages for the bimorph mirror actuators.
+    """
     pivoted = pd.DataFrame(data_dict["pivoted_data_dict"])
     initial_voltages = data_dict["initial_voltages"]
     increment = data_dict["increment"]
@@ -397,16 +411,29 @@ def calculate_optimal_voltages(
     # numpy array of pencil beam scans
     data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
-    voltage_adjustments = find_voltage_corrections_with_restraints(
-        data,
+    voltage_adjustments = find_voltage_corrections(
+        data,  # type: ignore
         increment,
-        (min_v, max_v),
-        max_diff,
         baseline_voltage_scan=baseline_voltage_scan_idx,
-    )  # type: ignore
-
+    )
     optimal_voltages = initial_voltages + voltage_adjustments
-    return optimal_voltages  # type: ignore
+    if check_voltages_fit_constraints(
+        optimal_voltages, voltage_range, max_consecutive_voltage_difference
+    ):
+        return optimal_voltages
+
+    else:
+        voltage_adjustments = find_voltage_corrections_with_restraints(
+            data,  # type: ignore
+            increment,
+            initial_voltages,
+            voltage_range,
+            max_consecutive_voltage_difference,
+            baseline_voltage_scan=baseline_voltage_scan_idx,
+        )
+        optimal_voltages = initial_voltages + voltage_adjustments
+
+        return optimal_voltages
 
 
 @callback(
@@ -435,8 +462,7 @@ def calculate_voltages(
 
     optimal_voltages = calculate_optimal_voltages(
         uploaded_data,
-        int(min_v),
-        int(max_v),
+        (int(min_v), int(max_v)),
         int(max_diff),
         int(baseline_voltage_scan_idx),
     )
