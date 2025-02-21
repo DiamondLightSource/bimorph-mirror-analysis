@@ -12,11 +12,7 @@ from bimorph_mirror_analysis.maths import (
 )
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
 
-external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
-]
-app = Dash(__name__, external_stylesheets=external_stylesheets)  # type:ignore
+app = Dash(__name__)  # type:ignore
 
 
 app.layout = html.Div(
