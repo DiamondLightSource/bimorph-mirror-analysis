@@ -32,5 +32,3 @@ WORKDIR /context
 #ENTRYPOINT ["/bin/bash"]
 ENTRYPOINT [ "bimorph-mirror-analysis" ]
 CMD ["server"]
-#CMD ["ls"]
-#CMD ["/src/bimorph-mirror-analysis/app.py"]
