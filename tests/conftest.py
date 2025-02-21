@@ -167,7 +167,6 @@ def actuator_data(
     return data, expected_corrections, initial_voltages
 
 
-
 @pytest.fixture
 def data_dict(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame) -> DataDict:
     output: DataDict = {

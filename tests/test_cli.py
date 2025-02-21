@@ -134,7 +134,7 @@ def test_server_command(cli_args: list[str], expected_config: dict):  # type: ig
         mock_run.assert_called_once()
         mock_run.assert_called_with(**expected_config)
 
-        
+
 @pytest.mark.parametrize("output_dir", ["outdir", "outdir/"])
 def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
     with (
