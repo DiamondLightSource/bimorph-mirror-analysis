@@ -135,10 +135,16 @@ def test_calculate_optimal_voltages(data_dict: DataDict):
 
 
 def test_calculate_optimal_voltages_with_restraints(data_dict: DataDict):
-    voltages = calculate_optimal_voltages(data_dict, (-1000, 1000), 10, 0)
-    voltages = np.round(voltages, 2)
-    # assert correct voltages calculated
-    assert check_voltages_fit_constraints(voltages, (-1000, 1000), 10)
+    with (
+        patch(
+            "bimorph_mirror_analysis.__main__.find_voltage_corrections_with_restraints"
+        ) as mock_find_voltage_corrections_with_restraints,
+    ):
+        voltages = calculate_optimal_voltages(data_dict, (-1000, 1000), 10, 0)
+        voltages = np.round(voltages, 2)
+        # assert correct voltages calculated
+        mock_find_voltage_corrections_with_restraints.assert_called()
+        assert check_voltages_fit_constraints(voltages, (-1000, 1000), 10)
 
 
 def test_calculate_voltages(data_dict: DataDict):
