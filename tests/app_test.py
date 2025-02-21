@@ -15,6 +15,7 @@ from bimorph_mirror_analysis.app import (
     read_file,
     run_server,
 )
+from bimorph_mirror_analysis.maths import check_voltages_fit_constraints
 
 
 def test_read_file_no_exception(
@@ -131,6 +132,13 @@ def test_calculate_optimal_voltages(data_dict: DataDict):
     voltages = np.round(voltages, 2)
     # assert correct voltages calculated
     np.testing.assert_almost_equal(voltages, np.array([72.14, 50.98, 18.59]))
+
+
+def test_calculate_optimal_voltages_with_restraints(data_dict: DataDict):
+    voltages = calculate_optimal_voltages(data_dict, (-1000, 1000), 50, 0)
+    voltages = np.round(voltages, 2)
+    # assert correct voltages calculated
+    assert check_voltages_fit_constraints(voltages, (-1000, 1000), 50)
 
 
 def test_calculate_voltages(data_dict: DataDict):
