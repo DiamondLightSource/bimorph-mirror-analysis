@@ -257,7 +257,7 @@ def check_voltages_fit_constraints(
     )
 
     diffs = np.diff(voltages)
-    within_max_diff = np.all(diffs <= max_consecutive_voltage_difference)
+    within_max_diff = np.all(abs(diffs) <= max_consecutive_voltage_difference)
 
     # bool required as np.all returns np.bool
     return bool(within_max_and_min and within_max_diff)
