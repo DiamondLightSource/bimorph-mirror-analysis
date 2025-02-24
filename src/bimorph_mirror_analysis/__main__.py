@@ -108,9 +108,9 @@ def calculate_optimal_voltages(
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
 
     if slit_range is not None:
-        pivoted_in_range = pivoted[
+        pivoted_in_range = pivoted[  # type: ignore
             pivoted["slit_position_x"]
-            > slit_range[0] & pivoted["slit_position_x"]
+            > slit_range[0] & pivoted["slit_position_x"]  # type: ignore
             < slit_range[1]
         ]
         data = pivoted_in_range[pivoted_in_range.columns[1:]].to_numpy()  # type: ignore
