@@ -58,6 +58,7 @@ def test_outpath_option(outpath: str | bool):
             voltage_range=(-1000, 1000),
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
+            slit_range=None,
         )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
@@ -115,7 +116,76 @@ def test_human_readable_option(human_readable: str | bool):
             voltage_range=(-1000, 1000),
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
+            slit_range=None,
         )
+        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ["slit_range"],
+    [
+        ["0.1 0.5"],
+        [False],
+    ],
+)
+def test_slit_range_option(slit_range: str | bool, raw_data_pivoted):
+    with (
+        patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
+        patch(
+            "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
+        ) as mock_calculate_optimal_voltages,
+        patch(
+            "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
+        ) as mock_read_bluesky_plan_output,
+    ):
+        # Create a mock DataFrame
+        mock_read_bluesky_plan_output.return_value = raw_data_pivoted
+        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+
+        if type(slit_range) is str:
+            result = runner.invoke(
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--slit-range",
+                    slit_range.split(" ")[0],
+                    slit_range.split(" ")[1],
+                ],
+            )
+            mock_calculate_optimal_voltages.assert_called_with(
+                "tests/data/raw_data.csv",
+                voltage_range=(-1000, 1000),
+                max_consecutive_voltage_difference=500,
+                baseline_voltage_scan=0,
+                slit_range=(
+                    float(slit_range.split(" ")[0]),
+                    float(slit_range.split(" ")[1]),
+                ),
+            )
+
+        else:
+            result = runner.invoke(
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
+            )
+            mock_calculate_optimal_voltages.assert_called_with(
+                "tests/data/raw_data.csv",
+                voltage_range=(-1000, 1000),
+                max_consecutive_voltage_difference=500,
+                baseline_voltage_scan=0,
+                slit_range=None,
+            )
+        mock_np_save.assert_called_once()
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
