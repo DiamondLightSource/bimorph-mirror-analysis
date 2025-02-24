@@ -74,30 +74,16 @@ def test_read_file_with_exception(data_dict: DataDict):
 
 
 @pytest.mark.parametrize(
-    "ag_grid_selector_value",
+    "ag_grid_selector_value, data_key, pivot_data_style",
     [
-        "Raw Data",
-        "Pivoted Data",
-        "Error",
+        ("Raw Data", "raw_data_dict", {"display": "none"}),
+        ("Pivoted Data", "pivoted_data_dict", {"display": "block", "margin": "auto"}),
+        ("Error", None, {"display": "block", "margin": "auto"}),
     ],
 )
-def test_change_table(data_dict: DataDict, ag_grid_selector_value: str):
-    output = change_table(data_dict, ag_grid_selector_value, {"display": "block"})
-    if ag_grid_selector_value == "Raw Data":
-        df = pd.DataFrame(data_dict["raw_data_dict"])
-        columns = [{"headerName": col, "field": col} for col in df.columns]
-        data: dict[str, str] = df.to_dict("records")  # type: ignore
-        pivot_data_style = {"display": "none"}
-        expected = (
-            columns,
-            data,
-            {"fileName": f"{data_dict['filename'].split('.')[0]}_pivoted.csv"},
-            pivot_data_style,
-        )
-
-    elif ag_grid_selector_value == "Pivoted Data":
-        df = pd.DataFrame(data_dict["pivoted_data_dict"])
-        pivot_data_style = {"display": "block", "margin": "auto"}
+def test_change_table(data_dict: DataDict, ag_grid_selector_value: str, data_key: str, pivot_data_style: dict[str, str]):
+    if data_key:
+        df = pd.DataFrame(data_dict.get(data_key))
         columns = [{"headerName": col, "field": col} for col in df.columns]
         data: dict[str, str] = df.to_dict("records")  # type: ignore
         expected = (
@@ -106,16 +92,10 @@ def test_change_table(data_dict: DataDict, ag_grid_selector_value: str):
             {"fileName": f"{data_dict['filename'].split('.')[0]}_pivoted.csv"},
             pivot_data_style,
         )
-    elif ag_grid_selector_value == "Error":
-        pivot_data_style = {"display": "block", "margin": "auto"}
+    else:  # "Error" case
         expected = ([{}], {}, {}, pivot_data_style)  # type: ignore
 
-    else:
-        raise ValueError(
-            f"value {ag_grid_selector_value} for ag_grid_selector_value parameter is \
-not covered by test"
-        )
-
+    output = change_table(data_dict, ag_grid_selector_value, {"display": "block"})
     assert output == expected
 
 
