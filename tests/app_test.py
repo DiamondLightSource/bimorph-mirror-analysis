@@ -81,7 +81,12 @@ def test_read_file_with_exception(data_dict: DataDict):
         ("Error", None, {"display": "block", "margin": "auto"}),
     ],
 )
-def test_change_table(data_dict: DataDict, ag_grid_selector_value: str, data_key: str, pivot_data_style: dict[str, str]):
+def test_change_table(
+    data_dict: DataDict,
+    ag_grid_selector_value: str,
+    data_key: str,
+    pivot_data_style: dict[str, str],
+):
     if data_key:
         df = pd.DataFrame(data_dict.get(data_key))
         columns = [{"headerName": col, "field": col} for col in df.columns]
