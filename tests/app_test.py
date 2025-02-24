@@ -11,6 +11,7 @@ from bimorph_mirror_analysis.app import (
     change_table,
     download_data,
     export_data_as_csv,
+    find_voltage_corrections_with_restraints,
     make_download_button_visible,
     read_file,
     run_server,
@@ -137,9 +138,12 @@ def test_calculate_optimal_voltages(data_dict: DataDict):
 def test_calculate_optimal_voltages_with_restraints(data_dict: DataDict):
     with (
         patch(
-            "bimorph_mirror_analysis.__main__.find_voltage_corrections_with_restraints"
+            "bimorph_mirror_analysis.app.find_voltage_corrections_with_restraints"
         ) as mock_find_voltage_corrections_with_restraints,
     ):
+        mock_find_voltage_corrections_with_restraints.side_effect = (
+            find_voltage_corrections_with_restraints
+        )
         voltages = calculate_optimal_voltages(data_dict, (-1000, 1000), 10, 0)
         voltages = np.round(voltages, 2)
         # assert correct voltages calculated
