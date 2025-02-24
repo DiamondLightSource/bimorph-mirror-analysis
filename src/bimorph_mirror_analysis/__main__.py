@@ -48,6 +48,11 @@ on the bimorph mirror."
         help="The path to save the human readable pencil beam scan table. \
 If the --human-readable flag is not supplied, the table is not saved.",
     ),
+    slit_range: tuple[float, float] | None = typer.Option(
+        None,
+        help="The minimum and maximum\
+ values for slit positions that hsould be considered when performing the analysis",
+    ),
 ):
     file_type = file_path.split(".")[-1]
     if human_readable is not None:
@@ -60,6 +65,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
         voltage_range=voltage_range,
         max_consecutive_voltage_difference=max_consecutive_voltage_difference,
         baseline_voltage_scan=baseline_voltage_scan,
+        slit_range=slit_range,
     )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
@@ -84,6 +90,7 @@ def calculate_optimal_voltages(
     voltage_range: tuple[int, int],
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
+    slit_range: tuple[float, float] | None = None,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
@@ -99,8 +106,17 @@ def calculate_optimal_voltages(
         The optimal voltages for the bimorph mirror actuators.
     """
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
-    # numpy array of pencil beam scans
-    data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+
+    if slit_range is not None:
+        pivoted_in_range = pivoted[
+            pivoted["slit_position_x"]
+            > slit_range[0] & pivoted["slit_position_x"]
+            < slit_range[1]
+        ]
+        data = pivoted_in_range[pivoted_in_range.columns[1:]].to_numpy()  # type: ignore
+
+    else:
+        data = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
 
     voltage_adjustments = find_voltage_corrections(
         data,  # type: ignore
