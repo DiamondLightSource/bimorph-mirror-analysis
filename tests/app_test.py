@@ -104,13 +104,9 @@ def test_change_table(
     assert output == expected
 
 
-@pytest.mark.parametrize("n_clicks", [1, None])
-def test_export_data_as_csv(n_clicks: int | None):
-    output = export_data_as_csv(n_clicks)
-    if n_clicks:  # only when int
-        assert output  # should be true
-    else:  # when Nnoe
-        assert not output  # should be false
+@pytest.mark.parametrize("n_clicks, expected", [(1, True), (None, False)])
+def test_export_data_as_csv(n_clicks: int | None, expected: bool):
+    assert export_data_as_csv(n_clicks) == expected
 
 
 def test_calculate_optimal_voltages(data_dict: DataDict):
