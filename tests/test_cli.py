@@ -8,7 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from bimorph_mirror_analysis import __version__
-from bimorph_mirror_analysis.__main__ import app
+from bimorph_mirror_analysis.__main__ import app, calculate_optimal_voltages
 
 runner = CliRunner()
 
@@ -124,7 +124,7 @@ def test_human_readable_option(human_readable: str | bool):
 @pytest.mark.parametrize(
     ["slit_range"],
     [
-        ["0.1 0.5"],
+        ["1.1 8.5"],
         [False],
     ],
 )
@@ -139,8 +139,8 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
         ) as mock_read_bluesky_plan_output,
     ):
         # Create a mock DataFrame
-        mock_read_bluesky_plan_output.return_value = raw_data_pivoted
-        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+        mock_read_bluesky_plan_output.return_value = (raw_data_pivoted, [0, 0, 0], 100)
+        mock_calculate_optimal_voltages.side_effect = calculate_optimal_voltages
 
         if type(slit_range) is str:
             result = runner.invoke(
@@ -185,8 +185,8 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                 baseline_voltage_scan=0,
                 slit_range=None,
             )
+            assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
         mock_np_save.assert_called_once()
-        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
 
 @pytest.mark.parametrize("output_dir", ["outdir", "outdir/"])
