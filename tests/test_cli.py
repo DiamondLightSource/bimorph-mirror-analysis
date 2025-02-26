@@ -128,7 +128,7 @@ def test_human_readable_option(human_readable: str | bool):
         [False],
     ],
 )
-def test_slit_range_option(slit_range: str | bool, raw_data_pivoted):
+def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFrame):
     with (
         patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
         patch(
