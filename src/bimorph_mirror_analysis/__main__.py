@@ -129,6 +129,12 @@ def calculate_optimal_voltages(
         return optimal_voltages
 
     else:
+        print("The optimal voltages calculated with multiple linear regression are:")
+        print(optimal_voltages)
+        print(
+            "However, these do not fit the constraints provided. Using an iterative\
+ approach to find the optimal voltages which fit the constraints"
+        )
         voltage_adjustments = find_voltage_corrections_with_restraints(
             data,  # type: ignore
             increment,
