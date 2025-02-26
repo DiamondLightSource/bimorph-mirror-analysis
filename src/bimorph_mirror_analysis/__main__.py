@@ -51,7 +51,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
     slit_range: tuple[float, float] | None = typer.Option(
         None,
         help="The minimum and maximum\
- values for slit positions that hsould be considered when performing the analysis",
+ values for slit positions that should be considered when performing the analysis",
     ),
 ):
     file_type = file_path.split(".")[-1]
