@@ -19,7 +19,7 @@ def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
             "num_slit_positions": 1,
             "channels": 3,
         }
-        pivoted, initial_voltages, increment, slit_position_column, detector_dolumn = (
+        pivoted, initial_voltages, increment, slit_position_column, detector_columns = (
             read_bluesky_plan_output("input_path")
         )
         pd.testing.assert_frame_equal(pivoted, raw_data_pivoted)
@@ -27,7 +27,7 @@ def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
         np.testing.assert_equal(increment, np.float64(100.0))
         mock_read_csv.assert_called()
         assert slit_position_column == "slits-x_centre"
-        assert detector_dolumn == "CentroidX"
+        assert detector_columns == "CentroidX"
 
 
 def test_read_raw_data_baseline_last_scan(
