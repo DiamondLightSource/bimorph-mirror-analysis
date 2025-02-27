@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 import numpy as np
 import pandas as pd
@@ -107,8 +107,37 @@ def test_read_raw_data_fail(raw_data_pivoted: pd.DataFrame):
         np.testing.assert_equal(increment, np.float64(100.0))
 
 
-def test_read_metadata():
-    metadata = read_metadata("tests/data/example_bluesky_output.csv")
+@pytest.mark.parametrize(
+    ["filename", "expected_stdout"],
+    [
+        ["tests/data/example_bluesky_output.csv", None],
+        [
+            """
+# voltage_increment 200.0
+# dimension x
+# num_slit_positions 361
+# channels 8
+#this will break
+slits-x_centre,slits-y_centre,CentroidX,CentroidY
+0.0,0.0,0.0,0.0
+                 """,
+            "an error has occured when reading the csv metadata",
+        ],
+    ],
+)
+def test_read_metadata(
+    filename: str, expected_stdout: str | None, capsys: pytest.LogCaptureFixture
+):
+    if expected_stdout is not None:
+        with patch("builtins.open", mock_open(read_data=filename)) as mock_file:
+            metadata = read_metadata(filename)
+            captured = capsys.readouterr()  # type: ignore
+            stdout = captured.out  # type: ignore
+            assert metadata == {}
+            assert expected_stdout in stdout
+            mock_file.assert_called()
+            return
+    metadata = read_metadata(filename)
     assert metadata == {
         "voltage_increment": 200.0,
         "dimension": "x",
