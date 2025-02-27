@@ -13,15 +13,15 @@ from bimorph_mirror_analysis.plots import (
 
 
 @pytest.fixture
-def sample_slit_positions():
+def sample_slit_positions() -> np.typing.NDArray[np.float64]:
     # just any data to plot works
-    return np.linspace(0, 10, 100)
+    return np.linspace(0, 10, 100, dtype=np.float64)  # type: ignore
 
 
 @pytest.fixture
-def sample_centroids():
+def sample_centroids() -> np.typing.NDArray[np.float64]:
     # just any data to plot works
-    return np.sin(np.linspace(0, 10, 100))
+    return np.sin(np.linspace(0, 10, 100))  # type: ignore
 
 
 def test_influence_function_plot(
