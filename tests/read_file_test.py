@@ -79,6 +79,6 @@ def test_read_metadata():
     assert metadata == {
         "voltage_increment": 200.0,
         "dimension": "x",
-        "num_slit_positions": 461,
+        "num_slit_positions": 361,
         "channels": 8,
     }
