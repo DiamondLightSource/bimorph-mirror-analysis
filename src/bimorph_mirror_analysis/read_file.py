@@ -31,7 +31,7 @@ def read_metadata(filepath: str) -> Metadata:
                 case "voltage_increment":
                     metadata[key] = float(line.split(" ")[1])
                 case "dimension":
-                    metadata[key] = line.split(" ")[1].lower()
+                    metadata[key] = line.split(" ")[1].lower().strip()
                 case "slit_positions":
                     metadata["num_slit_positions"] = int(line.split(" ")[1])
                 case "channels":
