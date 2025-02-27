@@ -38,7 +38,7 @@ pencil beam scans
 
     baseline_voltage_beamline_positions = data[:, baseline_voltage_scan]
 
-    target = np.mean(baseline_voltage_beamline_positions)
+    target = np.mean(baseline_voltage_beamline_positions, dtype=np.float64)
     desired_corrections = target - baseline_voltage_beamline_positions
 
     return interaction_matrix, desired_corrections
