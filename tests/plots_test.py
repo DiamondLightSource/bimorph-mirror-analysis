@@ -101,7 +101,7 @@ def test_pencil_beam_scan_plot(raw_data_pivoted: pd.DataFrame):
     assert len(lines) == 1
     assert np.array_equal(
         lines[0].get_xdata(),
-        raw_data_pivoted["slit_position_x"].to_numpy(),  # type: ignore
+        raw_data_pivoted["slits-x_centre"].to_numpy(),  # type: ignore
     )
     assert np.array_equal(
         lines[0].get_ydata(),

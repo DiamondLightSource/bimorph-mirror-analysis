@@ -53,10 +53,15 @@ If the --human-readable flag is not supplied, the table is not saved.",
         help="The minimum and maximum\
  values for slit positions that should be considered when performing the analysis",
     ),
+    detector_dimension: str | None = typer.Option(
+        None, help="The dimension of the detector to be optimised in the analysis"
+    ),
 ):
     file_type = file_path.split(".")[-1]
     if human_readable is not None:
-        pivoted, *_ = read_bluesky_plan_output(file_path)
+        pivoted, *_ = read_bluesky_plan_output(
+            file_path, detector_dimension=detector_dimension
+        )
         pivoted.to_csv(human_readable)
         print(f"The human-readable file has been written to {human_readable}")
 
@@ -66,6 +71,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
         max_consecutive_voltage_difference=max_consecutive_voltage_difference,
         baseline_voltage_scan=baseline_voltage_scan,
         slit_range=slit_range,
+        detector_dimension=detector_dimension,
     )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
@@ -91,6 +97,7 @@ def calculate_optimal_voltages(
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
     slit_range: tuple[float, float] | None = None,
+    detector_dimension: str | None = None,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
@@ -105,12 +112,14 @@ def calculate_optimal_voltages(
     Returns:
         The optimal voltages for the bimorph mirror actuators.
     """
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment, slit_position_column, _ = (
+        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension)
+    )
 
     if slit_range is not None:
         pivoted_in_range = pivoted[  # type: ignore
-            (pivoted["slit_position_x"] >= slit_range[0])
-            & (pivoted["slit_position_x"] <= slit_range[1])  # type: ignore
+            (pivoted[slit_position_column] >= slit_range[0])
+            & (pivoted[slit_position_column] <= slit_range[1])  # type: ignore
         ]
         data = pivoted_in_range[pivoted_in_range.columns[1:]].to_numpy()  # type: ignore
 
@@ -171,17 +180,22 @@ on the bimorph mirror."
         help="The index of the pencil beam scan which had no increment applied.",
         default=0,
     ),
+    detector_dimension: str | None = typer.Option(
+        None, help="The dimension of the detector to be optimised in the analysis"
+    ),
 ):
     # add trailing slash to output_dir if not present
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment, slit_position_column, _ = (
+        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension)
+    )
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
     slit_positions: np.typing.NDArray[np.float64] = pivoted[
-        "slit_position_x"
+        slit_position_column
     ].to_numpy()  # type: ignore
 
     for col in pencil_beam_scan_cols:
