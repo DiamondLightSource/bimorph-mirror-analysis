@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
+from bimorph_mirror_analysis.read_file import read_bluesky_plan_output, read_metadata
 
 
 def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
@@ -72,3 +72,13 @@ def test_read_raw_data_fail(raw_data_pivoted: pd.DataFrame):
         pd.testing.assert_frame_equal(pivoted, expected_output)
         np.testing.assert_array_equal(initial_voltages, np.array([0.0, 0.0, 0.0]))
         np.testing.assert_equal(increment, np.float64(100.0))
+
+
+def test_read_metadata():
+    metadata = read_metadata("tests/data/example_bluesky_output.csv")
+    assert metadata == {
+        "voltage_increment": 200.0,
+        "dimension": "x",
+        "num_slit_positions": 461,
+        "channels": 8,
+    }
