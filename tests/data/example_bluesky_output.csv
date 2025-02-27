@@ -1,6 +1,6 @@
 #voltage_increment 200.0
 #dimension X
-#slit_positions 461
+#slit_positions 361
 #channels 8
 scan_index,time,autocollimator-x_average,autocollimator-x_rms,autocollimator-y_average,autocollimator-y_rms,group_mirror_one-channels-1-output_voltage,group_mirror_one-channels-2-output_voltage,group_mirror_one-channels-3-output_voltage,group_mirror_one-channels-4-output_voltage,group_mirror_one-channels-5-output_voltage,group_mirror_one-channels-6-output_voltage,group_mirror_one-channels-7-output_voltage,group_mirror_one-channels-8-output_voltage,slits-x_centre,slits-x_gap,slits-y_centre,slits-y_gap
 0,1511.3516857624054,-4.222048422356599,4.2241540315713735,-325.0920077200224,325.0920346332342,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-348.0,0.05,0.0,0.05
