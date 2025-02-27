@@ -7,6 +7,39 @@ import pytest
 from bimorph_mirror_analysis.read_file import read_bluesky_plan_output, read_metadata
 
 
+@pytest.mark.parametrize(
+    "detector_dimension",
+    [
+        "x",
+        "y",
+        "X",
+        "Y",
+    ],
+)
+def test_detector_dimension_option(detector_dimension: str, raw_data: pd.DataFrame):
+    with (
+        patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv,
+        patch("bimorph_mirror_analysis.read_file.read_metadata") as mock_read_metadata,
+    ):
+        mock_read_csv.return_value = raw_data
+        mock_read_metadata.return_value = {
+            "voltage_increment": 100.0,
+            "dimension": "x",
+            "num_slit_positions": 21,
+            "channels": 3,
+        }
+        (
+            _,
+            _,
+            _,
+            _,
+            detector_column_name,
+        ) = read_bluesky_plan_output(
+            "input_path", detector_dimension=detector_dimension
+        )
+        assert detector_column_name == f"Centroid{detector_dimension.upper()}"
+
+
 def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
     with (
         patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv,
