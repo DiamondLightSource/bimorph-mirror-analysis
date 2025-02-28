@@ -29,13 +29,15 @@ def read_metadata(filepath: str) -> Metadata:
             key = line.split(" ")[0][1:]  # explude the first character which is a #
             match key:
                 case "voltage_increment":
-                    metadata[key] = float(line.split(" ")[1])
+                    metadata[key] = float(line.split(" ")[1].strip("\n ,"))
                 case "dimension":
-                    metadata[key] = line.split(" ")[1].lower().strip()
+                    metadata[key] = line.split(" ")[1].lower().strip("\n ,")
                 case "slit_positions":
-                    metadata["num_slit_positions"] = int(line.split(" ")[1])
+                    metadata["num_slit_positions"] = int(
+                        line.split(" ")[1].strip("\n ,")
+                    )
                 case "channels":
-                    metadata[key] = int(line.split(" ")[1])
+                    metadata[key] = int(line.split(" ")[1].strip("\n ,"))
                 case _:
                     pass
 
