@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 import numpy as np
 import pandas as pd
@@ -108,13 +108,29 @@ def test_read_raw_data_fail(raw_data_pivoted: pd.DataFrame):
 
 
 @pytest.mark.parametrize(
-    ["filename"],
+    ["filename", "is_filepath"],
     [
-        ["tests/data/example_bluesky_output.csv"],
+        ["tests/data/example_bluesky_output.csv", True],
+        [
+            """#voltage_increment 200.0
+#dimension x
+#slit_positions 361
+#channels 8
+#this will break
+slits-x_centre,slits-y_centre,CentroidX,CentroidY
+0.0,0.0,0.0,0.0""",
+            False,
+        ],
     ],
 )
-def test_read_metadata(filename: str):
-    metadata = read_metadata(filename)
+def test_read_metadata(filename: str, is_filepath: str | None):
+    if not is_filepath:
+        with patch("builtins.open", mock_open(read_data=filename)) as mock_file:
+            metadata = read_metadata(filename)
+            mock_file.assert_called()
+    else:
+        metadata = read_metadata(filename)
+
     assert metadata == {
         "voltage_increment": 200.0,
         "dimension": "x",
