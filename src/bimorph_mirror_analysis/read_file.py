@@ -37,7 +37,7 @@ def read_metadata(filepath: str) -> Metadata:
                 case "channels":
                     metadata[key] = int(line.split(" ")[1])
                 case _:
-                    print("an error has occured when reading the csv metadata")
+                    pass
 
     return metadata
 
