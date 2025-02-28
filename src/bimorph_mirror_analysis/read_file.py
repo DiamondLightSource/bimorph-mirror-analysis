@@ -81,6 +81,9 @@ def read_bluesky_plan_output(
     ].to_list()[0]
 
     if detector_dimension is not None:
+        raise ValueError(
+            f"Invalid detector dimension {detector_dimension}. It must be x or y."
+        )
         assert detector_dimension in ["x", "y", "X", "Y"], "Invalid detector dimension"
         detector_column_name = f"Centroid{detector_dimension.upper()}"
     else:
