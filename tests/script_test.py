@@ -128,6 +128,7 @@ def test_find_voltage_corrections_with_restraints_index_error_throw(
         (np.array([0, 0, 0]), (-1000, 1000), 500, True),  # np arrays should work
         ([-1000, -500, 0, 500, 1000], (-1000, 1000), 500, True),
         ([0, 0, 501], (-1000, 1000), 500, False),  # diff too big
+        ([0, 0, -501], (-1000, 1000), 500, False),  # diff too big
         ([1000, 1000, 1001], (-1000, 1000), 500, False),  # value out of range
     ],
 )

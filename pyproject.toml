@@ -19,6 +19,11 @@ dependencies = [
     "typer",
     "scipy",
     "scipy-stubs",
+    "plotly",
+    "dash",
+    "dash-bootstrap-components",
+    "dash-ag-grid",
+    "dash[testing]",
     "matplotlib",
 ] # Add project dependencies here, e.g. ["click", "numpy"]
 dynamic = ["version"]
@@ -55,7 +60,8 @@ version_file = "src/bimorph_mirror_analysis/_version.py"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-reportMissingImports = false # Ignore missing stubs in imported modules
+reportMissingImports = false                      # Ignore missing stubs in imported modules
+exclude = ["bimorph-analysis-webapp/.helmignore"]
 
 [tool.pytest.ini_options]
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error

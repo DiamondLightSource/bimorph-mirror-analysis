@@ -1,9 +1,11 @@
+import io
+
 import numpy as np
 import pandas as pd
 
 
 def read_bluesky_plan_output(
-    filepath: str,
+    filepath: str | io.StringIO,
     baseline_voltage_scan_index: int = 0,
 ) -> tuple[pd.DataFrame, np.typing.NDArray[np.float64], float]:
     """Read the csv file putput by the bluesky plan

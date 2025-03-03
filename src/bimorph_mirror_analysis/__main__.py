@@ -5,6 +5,7 @@ import datetime
 import numpy as np
 import typer
 
+from bimorph_mirror_analysis.app import run_server
 from bimorph_mirror_analysis.maths import (
     check_voltages_fit_constraints,
     find_voltage_corrections,
@@ -246,6 +247,17 @@ def main(
     ),
 ):
     pass
+
+
+@app.command()
+def server(
+    host: str = typer.Option(
+        "0.0.0.0", help="The container ip address to run the server on."
+    ),
+    port: int = typer.Option(8050, help="The port to run the server on."),
+    debug: bool = typer.Option(False, help="Run the server in debug mode."),
+):
+    run_server(host, port, debug)
 
 
 if __name__ == "__main__":
