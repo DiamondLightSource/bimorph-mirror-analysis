@@ -4,19 +4,23 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from bimorph_mirror_analysis.read_file import read_bluesky_plan_output, read_metadata
+from bimorph_mirror_analysis.read_file import (
+    DetectorDimension,
+    read_bluesky_plan_output,
+    read_metadata,
+)
 
 
 @pytest.mark.parametrize(
     "detector_dimension",
     [
-        "x",
-        "y",
         "X",
         "Y",
     ],
 )
-def test_detector_dimension_option(detector_dimension: str, raw_data: pd.DataFrame):
+def test_detector_dimension_option(
+    detector_dimension: DetectorDimension, raw_data: pd.DataFrame
+):
     with (
         patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv,
         patch("bimorph_mirror_analysis.read_file.read_metadata") as mock_read_metadata,
@@ -37,7 +41,7 @@ def test_detector_dimension_option(detector_dimension: str, raw_data: pd.DataFra
         ) = read_bluesky_plan_output(
             "input_path", detector_dimension=detector_dimension
         )
-        assert detector_column_name == f"Centroid{detector_dimension.upper()}"
+        assert detector_column_name == f"Centroid{detector_dimension}"
 
 
 def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):

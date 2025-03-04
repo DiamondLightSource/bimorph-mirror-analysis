@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TypedDict
 
 import numpy as np
@@ -9,6 +10,11 @@ class Metadata(TypedDict):
     dimension: str
     num_slit_positions: int
     channels: int
+
+
+class DetectorDimension(Enum):
+    X = "X"
+    Y = "Y"
 
 
 def read_metadata(filepath: str) -> Metadata:
@@ -47,7 +53,7 @@ def read_metadata(filepath: str) -> Metadata:
 def read_bluesky_plan_output(
     filepath: str,
     baseline_voltage_scan_index: int = 0,
-    detector_dimension: str | None = None,
+    detector_dimension: DetectorDimension | None = None,
 ) -> tuple[pd.DataFrame, np.typing.NDArray[np.float64], float, str, str]:
     """Read the csv file putput by the bluesky plan
 
@@ -81,11 +87,11 @@ def read_bluesky_plan_output(
     ].to_list()[0]
 
     if detector_dimension is not None:
-        if detector_dimension not in ["x", "y", "X", "Y"]:
+        if detector_dimension not in DetectorDimension._value2member_map_:
             raise ValueError(
-                f"Invalid detector dimension {detector_dimension}. It must be x or y."
+                f"Invalid detector dimension {detector_dimension}. It must be X or Y."
             )
-        detector_column_name = f"Centroid{detector_dimension.upper()}"
+        detector_column_name = f"Centroid{detector_dimension}"
     else:
         detector_column_name = f"Centroid{metadata['dimension'].upper()}"
 

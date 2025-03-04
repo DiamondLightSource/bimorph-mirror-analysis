@@ -15,7 +15,10 @@ from bimorph_mirror_analysis.plots import (
     MirrorSurfacePlot,
     PencilBeamScanPlot,
 )
-from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
+from bimorph_mirror_analysis.read_file import (
+    DetectorDimension,
+    read_bluesky_plan_output,
+)
 
 from . import __version__
 
@@ -57,10 +60,15 @@ If the --human-readable flag is not supplied, the table is not saved.",
         None, help="The dimension of the detector to be optimised in the analysis"
     ),
 ):
+    if detector_dimension is not None:
+        detector_dimension_enum = DetectorDimension[detector_dimension.upper()]
+    else:
+        detector_dimension_enum = None
+
     file_type = file_path.split(".")[-1]
     if human_readable is not None:
         pivoted, *_ = read_bluesky_plan_output(
-            file_path, detector_dimension=detector_dimension
+            file_path, detector_dimension=detector_dimension_enum
         )
         pivoted.to_csv(human_readable)
         print(f"The human-readable file has been written to {human_readable}")
@@ -71,7 +79,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
         max_consecutive_voltage_difference=max_consecutive_voltage_difference,
         baseline_voltage_scan=baseline_voltage_scan,
         slit_range=slit_range,
-        detector_dimension=detector_dimension,
+        detector_dimension=detector_dimension_enum,
     )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
@@ -97,7 +105,7 @@ def calculate_optimal_voltages(
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
     slit_range: tuple[float, float] | None = None,
-    detector_dimension: str | None = None,
+    detector_dimension: DetectorDimension | None = None,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
@@ -184,12 +192,16 @@ on the bimorph mirror."
         None, help="The dimension of the detector to be optimised in the analysis"
     ),
 ):
+    if detector_dimension is not None:
+        detector_dimension_enum = DetectorDimension[detector_dimension.upper()]
+    else:
+        detector_dimension_enum = None
     # add trailing slash to output_dir if not present
     if output_dir[-1] != "/":
         output_dir += "/"
 
     pivoted, initial_voltages, increment, slit_position_column, _ = (
-        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension)
+        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension_enum)
     )
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
