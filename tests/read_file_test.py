@@ -12,14 +12,18 @@ from bimorph_mirror_analysis.read_file import (
 
 
 @pytest.mark.parametrize(
-    "detector_dimension",
     [
-        "X",
-        "Y",
+        "detector_dimension",
+        "raise_error",
+    ],
+    [
+        ("X", False),
+        ("Y", False),
+        ("a", True),
     ],
 )
 def test_detector_dimension_option(
-    detector_dimension: DetectorDimension, raw_data: pd.DataFrame
+    detector_dimension: DetectorDimension, raise_error: bool, raw_data: pd.DataFrame
 ):
     with (
         patch("bimorph_mirror_analysis.read_file.pd.read_csv") as mock_read_csv,
@@ -32,16 +36,22 @@ def test_detector_dimension_option(
             "num_slit_positions": 21,
             "channels": 3,
         }
-        (
-            _,
-            _,
-            _,
-            _,
-            detector_column_name,
-        ) = read_bluesky_plan_output(
-            "input_path", detector_dimension=detector_dimension
-        )
-        assert detector_column_name == f"Centroid{detector_dimension}"
+        if raise_error:
+            with pytest.raises(ValueError):
+                read_bluesky_plan_output(
+                    "input_path", detector_dimension=detector_dimension
+                )
+        else:
+            (
+                _,
+                _,
+                _,
+                _,
+                detector_column_name,
+            ) = read_bluesky_plan_output(
+                "input_path", detector_dimension=detector_dimension
+            )
+            assert detector_column_name == f"Centroid{detector_dimension}"
 
 
 def test_read_raw_data(raw_data: pd.DataFrame, raw_data_pivoted: pd.DataFrame):
