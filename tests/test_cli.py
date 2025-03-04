@@ -59,6 +59,7 @@ def test_outpath_option(outpath: str | bool):
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
             slit_range=None,
+            detector_dimension=None,
         )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
@@ -117,6 +118,7 @@ def test_human_readable_option(human_readable: str | bool):
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
             slit_range=None,
+            detector_dimension=None,
         )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
@@ -139,7 +141,13 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
         ) as mock_read_bluesky_plan_output,
     ):
         # Create a mock DataFrame
-        mock_read_bluesky_plan_output.return_value = (raw_data_pivoted, [0, 0, 0], 100)
+        mock_read_bluesky_plan_output.return_value = (
+            raw_data_pivoted,
+            [0, 0, 0],
+            100,
+            "slits-x_centre",
+            "CentroidX",
+        )
         mock_calculate_optimal_voltages.side_effect = calculate_optimal_voltages
 
         if type(slit_range) is str:
@@ -165,6 +173,7 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                     float(slit_range.split(" ")[0]),
                     float(slit_range.split(" ")[1]),
                 ),
+                detector_dimension=None,
             )
 
         else:
@@ -184,6 +193,7 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                 max_consecutive_voltage_difference=500,
                 baseline_voltage_scan=0,
                 slit_range=None,
+                detector_dimension=None,
             )
             assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
         mock_np_save.assert_called_once()
@@ -205,7 +215,13 @@ def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
             "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
         ) as mock_read_bluesky_plan_output,
     ):
-        mock_read_bluesky_plan_output.return_value = [raw_data_pivoted, [0, 0, 0], 100]
+        mock_read_bluesky_plan_output.return_value = [
+            raw_data_pivoted,
+            [0, 0, 0],
+            100,
+            "slits-x_centre",
+            "CentroidX",
+        ]
         _ = runner.invoke(
             app,
             [
