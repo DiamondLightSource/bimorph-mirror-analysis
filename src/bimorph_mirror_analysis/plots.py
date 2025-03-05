@@ -13,6 +13,9 @@ class Plot:
     def save_plot(self, filename: str):
         self.fig.savefig(filename)  # type: ignore
 
+    def __del__(self):
+        plt.close(self.fig)
+
 
 class InfluenceFunctionPlot(Plot):
     def __init__(
