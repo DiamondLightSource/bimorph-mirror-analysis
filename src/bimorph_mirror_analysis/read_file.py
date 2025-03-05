@@ -77,7 +77,8 @@ def read_bluesky_plan_output(
     if baseline_voltage_scan_index >= 0:
         baseline_idx = baseline_voltage_scan_index
     else:
-        baseline_idx = len(data) + baseline_voltage_scan_index - 1
+        baseline_idx = len(data) + baseline_voltage_scan_index
+
     initial_voltages = data.loc[baseline_idx, voltage_cols].to_numpy()  # type: ignore
     # voltages from any other scan will have a change in the voltages
     voltage_increment = metadata["voltage_increment"]
