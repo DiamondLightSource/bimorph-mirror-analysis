@@ -314,7 +314,7 @@ def test_generate_plots(
                 f"Centroid{detector_dimension.upper()}",
             )
 
-            _ = runner.invoke(
+            result = runner.invoke(
                 app,
                 [
                     "generate-plots",
@@ -330,6 +330,8 @@ def test_generate_plots(
                 ],
             )
 
+            assert result.exit_code == 0
+
             mock_read_bluesky_plan_output.assert_called_once_with(
                 "input.csv",
                 baseline_voltage_scan_index=0,
@@ -344,7 +346,7 @@ def test_generate_plots(
                 "slits-x_centre",
                 "CentroidX",
             )
-            _ = runner.invoke(
+            result = runner.invoke(
                 app,
                 [
                     "generate-plots",
@@ -357,6 +359,8 @@ def test_generate_plots(
                     "0",
                 ],
             )
+
+            assert result.exit_code == 0
 
             mock_read_bluesky_plan_output.assert_called_once_with(
                 "input.csv", baseline_voltage_scan_index=0, detector_dimension=None
