@@ -88,11 +88,11 @@ def read_bluesky_plan_output(
     ].to_list()[0]
 
     if detector_dimension is not None:
-        if detector_dimension not in DetectorDimension._value2member_map_:
+        if detector_dimension.value not in DetectorDimension._value2member_map_:
             raise ValueError(
                 f"Invalid detector dimension {detector_dimension}. It must be X or Y."
             )
-        detector_column_name = f"Centroid{detector_dimension}"
+        detector_column_name = f"Centroid{detector_dimension.value}"
     else:
         detector_column_name = f"Centroid{metadata['dimension'].upper()}"
 
