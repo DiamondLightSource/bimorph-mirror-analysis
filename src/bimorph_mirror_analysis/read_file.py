@@ -65,8 +65,8 @@ def read_bluesky_plan_output(
         baseline_voltage_scan_index: The scan number of the baseline voltage.
 
     Returns:
-        A tuple containing the DataFrame, the initial voltages array and the voltage
-        incrememnt.
+        A tuple containing the DataFrame, the initial voltages array, the voltage
+        incrememnt, the slit position column name and the detector value column name.
     """
     metadata = read_metadata(filepath)
 
