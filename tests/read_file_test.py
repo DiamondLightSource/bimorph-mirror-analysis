@@ -112,9 +112,9 @@ def test_read_raw_data_fail(raw_data_pivoted: pd.DataFrame):
 
 
 @pytest.mark.parametrize(
-    ["filename", "is_filepath"],
+    ["filename", "is_filepath", "raise_error"],
     [
-        ["tests/data/example_bluesky_output.csv", True],
+        ["tests/data/example_bluesky_output.csv", True, False],
         [
             """#voltage_increment 200.0
 #dimension x
@@ -124,20 +124,38 @@ def test_read_raw_data_fail(raw_data_pivoted: pd.DataFrame):
 slits-x_centre,slits-y_centre,CentroidX,CentroidY
 0.0,0.0,0.0,0.0""",
             False,
+            False,
+        ],
+        [
+            """#voltage_increment 200.0
+#dimension x
+#channels 8
+#this will break
+slits-x_centre,slits-y_centre,CentroidX,CentroidY
+0.0,0.0,0.0,0.0""",
+            False,
+            True,
         ],
     ],
 )
-def test_read_metadata(filename: str, is_filepath: str | None):
-    if not is_filepath:
-        with patch("builtins.open", mock_open(read_data=filename)) as mock_file:
+def test_read_metadata(filename: str, is_filepath: bool, raise_error: bool):
+    def read_and_assert():
+        # extra steps to read the string as file contents
+        if not is_filepath:
+            with patch("builtins.open", mock_open(read_data=filename)) as mock_file:
+                metadata = read_metadata(filename)
+                mock_file.assert_called()
+        else:
             metadata = read_metadata(filename)
-            mock_file.assert_called()
-    else:
-        metadata = read_metadata(filename)
+        assert metadata == {
+            "voltage_increment": 200.0,
+            "dimension": "x",
+            "num_slit_positions": 361,
+            "channels": 8,
+        }
 
-    assert metadata == {
-        "voltage_increment": 200.0,
-        "dimension": "x",
-        "num_slit_positions": 361,
-        "channels": 8,
-    }
+    if raise_error:
+        with pytest.raises(ValueError):
+            read_and_assert()
+    else:
+        read_and_assert()
