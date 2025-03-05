@@ -224,10 +224,10 @@ on the bimorph mirror."
     responses = np.diff(
         data, axis=1
     )  # calculate the response of each actuator by subtracting previous pencil beam
-    interation_matrix = responses / increment  # response per unit charge
+    interaction_matrix = responses / increment  # response per unit charge
 
     for actuator_num in range(responses.shape[1]):
-        centroids = interation_matrix[:, actuator_num]
+        centroids = interaction_matrix[:, actuator_num]
         plot = InfluenceFunctionPlot(slit_positions, centroids, actuator_num)
         plot.save_plot(output_dir + f"actuator_{actuator_num}_influence_function.png")
     print(f"influence function plots have been saved to {output_dir}")
@@ -246,10 +246,10 @@ on the bimorph mirror."
         baseline_voltage_scan=baseline_voltage_scan,
     )
     unrestrained_centroid_corrections = np.matmul(
-        interation_matrix, unrestrained_voltage_corrections
+        interaction_matrix, unrestrained_voltage_corrections
     )
     restrained_centroid_corrections = np.matmul(
-        interation_matrix, restrained_voltage_corrections
+        interaction_matrix, restrained_voltage_corrections
     )
 
     baseline_centroids = pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy()  # type: ignore
