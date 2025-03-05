@@ -47,6 +47,16 @@ def read_metadata(filepath: str) -> Metadata:
                 case _:
                     pass
 
+    # check all the metadata is present
+    if any(
+        key not in metadata
+        for key in ["voltage_increment", "dimension", "num_slit_positions", "channels"]
+    ):
+        raise ValueError(
+            "The input files metadata is incomplete. there must be an entry for\
+                voltage_increment, dimension, slit_positions and channels"
+        )
+
     return metadata
 
 
