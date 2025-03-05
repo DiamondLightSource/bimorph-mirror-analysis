@@ -207,7 +207,7 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
         ["Y"],
         ["x"],
         ["y"],
-        [False],
+        [None],
     ],
 )
 def test_detector_dimension_option(
@@ -277,8 +277,20 @@ def test_detector_dimension_option(
         mock_np_save.assert_called_once()
 
 
-@pytest.mark.parametrize("output_dir", ["outdir", "outdir/"])
-def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
+@pytest.mark.parametrize(
+    ["output_dir", "detector_dimension"],
+    [
+        ["outdir", "X"],
+        ["outdir/", "X"],
+        ["outdir/", "Y"],
+        ["outdir/", "x"],
+        ["outdir/", "y"],
+        ["outdir/", None],
+    ],
+)
+def test_generate_plots(
+    raw_data_pivoted: pd.DataFrame, output_dir: str, detector_dimension: str | None
+):
     with (
         patch(
             "bimorph_mirror_analysis.__main__.InfluenceFunctionPlot.save_plot"
@@ -293,26 +305,63 @@ def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
             "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
         ) as mock_read_bluesky_plan_output,
     ):
-        mock_read_bluesky_plan_output.return_value = [
-            raw_data_pivoted,
-            [0, 0, 0],
-            100,
-            "slits-x_centre",
-            "CentroidX",
-        ]
-        _ = runner.invoke(
-            app,
-            [
-                "generate-plots",
+        if detector_dimension is not None:
+            mock_read_bluesky_plan_output.return_value = (
+                raw_data_pivoted,
+                [0, 0, 0],
+                100,
+                "slits-x_centre",
+                f"Centroid{detector_dimension.upper()}",
+            )
+
+            _ = runner.invoke(
+                app,
+                [
+                    "generate-plots",
+                    "input.csv",
+                    output_dir,
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--baseline-voltage-scan",
+                    "0",
+                    "--detector-dimension",
+                    detector_dimension,
+                ],
+            )
+
+            mock_read_bluesky_plan_output.assert_called_once_with(
                 "input.csv",
-                output_dir,
-                "-1000",
-                "1000",
-                "500",
-                "--baseline-voltage-scan",
-                "0",
-            ],
-        )
+                baseline_voltage_scan_index=0,
+                detector_dimension=DetectorDimension(detector_dimension.upper()),
+            )
+
+        else:
+            mock_read_bluesky_plan_output.return_value = (
+                raw_data_pivoted,
+                [0, 0, 0],
+                100,
+                "slits-x_centre",
+                "CentroidX",
+            )
+            _ = runner.invoke(
+                app,
+                [
+                    "generate-plots",
+                    "input.csv",
+                    output_dir,
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--baseline-voltage-scan",
+                    "0",
+                ],
+            )
+
+            mock_read_bluesky_plan_output.assert_called_once_with(
+                "input.csv", baseline_voltage_scan_index=0, detector_dimension=None
+            )
+
         # assert that the slash is added if it is missing
         if output_dir[-1] != "/":
             mock_MirrorSurfacePlot_save_plot.assert_called_once_with(
