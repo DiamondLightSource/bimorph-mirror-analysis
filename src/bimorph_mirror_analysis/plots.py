@@ -13,6 +13,9 @@ class Plot:
     def save_plot(self, filename: str):
         self.fig.savefig(filename)  # type: ignore
 
+    def __del__(self):
+        plt.close(self.fig)
+
 
 class InfluenceFunctionPlot(Plot):
     def __init__(
@@ -72,6 +75,6 @@ class PencilBeamScanPlot(Plot):
         self.ax.set_ylabel("Centroid position", fontsize=18)  # type: ignore
         self.ax.set_title(f"Beamline Scan {scan_num}", fontsize=24, pad=30)  # type: ignore
         self.ax.plot(  # type: ignore
-            pivoted_df["slit_position_x"],  # type: ignore
+            pivoted_df["slits-x_centre"],  # type: ignore
             pivoted_df[f"pencil_beam_scan_{scan_num}"],  # type: ignore
         )

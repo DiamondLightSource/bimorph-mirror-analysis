@@ -9,6 +9,7 @@ from typer.testing import CliRunner
 
 from bimorph_mirror_analysis import __version__
 from bimorph_mirror_analysis.__main__ import app, calculate_optimal_voltages
+from bimorph_mirror_analysis.read_file import DetectorDimension
 
 runner = CliRunner()
 
@@ -59,6 +60,7 @@ def test_outpath_option(outpath: str | bool):
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
             slit_range=None,
+            detector_dimension=None,
         )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
@@ -117,6 +119,7 @@ def test_human_readable_option(human_readable: str | bool):
             max_consecutive_voltage_difference=500,
             baseline_voltage_scan=0,
             slit_range=None,
+            detector_dimension=None,
         )
         assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
 
@@ -139,7 +142,13 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
         ) as mock_read_bluesky_plan_output,
     ):
         # Create a mock DataFrame
-        mock_read_bluesky_plan_output.return_value = (raw_data_pivoted, [0, 0, 0], 100)
+        mock_read_bluesky_plan_output.return_value = (
+            raw_data_pivoted,
+            [0, 0, 0],
+            100,
+            "slits-x_centre",
+            "CentroidX",
+        )
         mock_calculate_optimal_voltages.side_effect = calculate_optimal_voltages
 
         if type(slit_range) is str:
@@ -165,6 +174,7 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                     float(slit_range.split(" ")[0]),
                     float(slit_range.split(" ")[1]),
                 ),
+                detector_dimension=None,
             )
 
         else:
@@ -184,13 +194,103 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                 max_consecutive_voltage_difference=500,
                 baseline_voltage_scan=0,
                 slit_range=None,
+                detector_dimension=None,
             )
             assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
         mock_np_save.assert_called_once()
 
 
-@pytest.mark.parametrize("output_dir", ["outdir", "outdir/"])
-def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
+@pytest.mark.parametrize(
+    ["detector_dimension"],
+    [
+        ["X"],
+        ["Y"],
+        ["x"],
+        ["y"],
+        [None],
+    ],
+)
+def test_detector_dimension_option(
+    detector_dimension: str | None, raw_data_pivoted: pd.DataFrame
+):
+    with (
+        patch("bimorph_mirror_analysis.__main__.np.savetxt") as mock_np_save,
+        patch(
+            "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
+        ) as mock_calculate_optimal_voltages,
+        patch(
+            "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
+        ) as mock_read_bluesky_plan_output,
+    ):
+        # Create a mock DataFrame
+        mock_read_bluesky_plan_output.return_value = (
+            raw_data_pivoted,
+            [0, 0, 0],
+            100,
+            "slits-x_centre",
+            "CentroidX",
+        )
+        mock_calculate_optimal_voltages.side_effect = calculate_optimal_voltages
+
+        if type(detector_dimension) is str:
+            result = runner.invoke(
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--detector-dimension",
+                    detector_dimension,
+                ],
+            )
+            mock_calculate_optimal_voltages.assert_called_with(
+                "tests/data/raw_data.csv",
+                voltage_range=(-1000, 1000),
+                max_consecutive_voltage_difference=500,
+                baseline_voltage_scan=0,
+                slit_range=None,
+                detector_dimension=DetectorDimension(detector_dimension.upper()),
+            )
+
+        else:
+            result = runner.invoke(
+                app,
+                [
+                    "calculate-voltages",
+                    "tests/data/raw_data.csv",
+                    "-1000",
+                    "1000",
+                    "500",
+                ],
+            )
+            mock_calculate_optimal_voltages.assert_called_with(
+                "tests/data/raw_data.csv",
+                voltage_range=(-1000, 1000),
+                max_consecutive_voltage_difference=500,
+                baseline_voltage_scan=0,
+                slit_range=None,
+                detector_dimension=None,
+            )
+            assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+        mock_np_save.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ["output_dir", "detector_dimension"],
+    [
+        ["outdir", "X"],
+        ["outdir/", "X"],
+        ["outdir/", "Y"],
+        ["outdir/", "x"],
+        ["outdir/", "y"],
+        ["outdir/", None],
+    ],
+)
+def test_generate_plots(
+    raw_data_pivoted: pd.DataFrame, output_dir: str, detector_dimension: str | None
+):
     with (
         patch(
             "bimorph_mirror_analysis.__main__.InfluenceFunctionPlot.save_plot"
@@ -205,20 +305,67 @@ def test_generate_plots(raw_data_pivoted: pd.DataFrame, output_dir: str):
             "bimorph_mirror_analysis.__main__.read_bluesky_plan_output"
         ) as mock_read_bluesky_plan_output,
     ):
-        mock_read_bluesky_plan_output.return_value = [raw_data_pivoted, [0, 0, 0], 100]
-        _ = runner.invoke(
-            app,
-            [
-                "generate-plots",
+        if detector_dimension is not None:
+            mock_read_bluesky_plan_output.return_value = (
+                raw_data_pivoted,
+                [0, 0, 0],
+                100,
+                "slits-x_centre",
+                f"Centroid{detector_dimension.upper()}",
+            )
+
+            result = runner.invoke(
+                app,
+                [
+                    "generate-plots",
+                    "input.csv",
+                    output_dir,
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--baseline-voltage-scan",
+                    "0",
+                    "--detector-dimension",
+                    detector_dimension,
+                ],
+            )
+
+            assert result.exit_code == 0
+
+            mock_read_bluesky_plan_output.assert_called_once_with(
                 "input.csv",
-                output_dir,
-                "-1000",
-                "1000",
-                "500",
-                "--baseline-voltage-scan",
-                "0",
-            ],
-        )
+                baseline_voltage_scan_index=0,
+                detector_dimension=DetectorDimension(detector_dimension.upper()),
+            )
+
+        else:
+            mock_read_bluesky_plan_output.return_value = (
+                raw_data_pivoted,
+                [0, 0, 0],
+                100,
+                "slits-x_centre",
+                "CentroidX",
+            )
+            result = runner.invoke(
+                app,
+                [
+                    "generate-plots",
+                    "input.csv",
+                    output_dir,
+                    "-1000",
+                    "1000",
+                    "500",
+                    "--baseline-voltage-scan",
+                    "0",
+                ],
+            )
+
+            assert result.exit_code == 0
+
+            mock_read_bluesky_plan_output.assert_called_once_with(
+                "input.csv", baseline_voltage_scan_index=0, detector_dimension=None
+            )
+
         # assert that the slash is added if it is missing
         if output_dir[-1] != "/":
             mock_MirrorSurfacePlot_save_plot.assert_called_once_with(
