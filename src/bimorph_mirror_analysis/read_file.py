@@ -53,8 +53,8 @@ def read_metadata(filepath: str) -> Metadata:
         for key in ["voltage_increment", "dimension", "num_slit_positions", "channels"]
     ):
         raise ValueError(
-            "The input files metadata is incomplete. there must be an entry for\
-                voltage_increment, dimension, slit_positions and channels"
+            "The input files metadata is incomplete. There must be an entry for \
+voltage_increment, dimension, slit_positions and channels"
         )
 
     return metadata
