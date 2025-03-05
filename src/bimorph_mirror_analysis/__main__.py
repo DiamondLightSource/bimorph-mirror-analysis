@@ -201,7 +201,11 @@ on the bimorph mirror."
         output_dir += "/"
 
     pivoted, initial_voltages, increment, slit_position_column, _ = (
-        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension_enum)
+        read_bluesky_plan_output(
+            file_path,
+            baseline_voltage_scan_index=baseline_voltage_scan,
+            detector_dimension=detector_dimension_enum,
+        )
     )
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
