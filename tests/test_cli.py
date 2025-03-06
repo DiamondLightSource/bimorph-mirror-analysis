@@ -122,6 +122,21 @@ def test_human_readable_option(human_readable: str | bool):
 
 
 @pytest.mark.parametrize(
+    "cli_args, expected_config",
+    [
+        (["--debug"], {"debug": True, "host": "0.0.0.0", "port": 8050}),
+        (["--no-debug"], {"debug": False, "host": "0.0.0.0", "port": 8050}),
+        (["--host", "127.0.0.1"], {"debug": False, "host": "127.0.0.1", "port": 8050}),
+        (["--port", "8080"], {"debug": False, "host": "0.0.0.0", "port": 8080}),
+    ],
+)
+def test_server_command(cli_args: list[str], expected_config: dict):  # type: ignore
+    with patch("bimorph_mirror_analysis.app.Dash.run") as mock_run:
+        runner.invoke(app, ["server"] + cli_args)
+        mock_run.assert_called_once()
+        mock_run.assert_called_with(**expected_config)
+
+@pytest.mark.parametrize(
     ["slit_range"],
     [
         ["1.1 8.5"],
