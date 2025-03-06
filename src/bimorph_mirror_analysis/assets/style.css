@@ -1,0 +1,22 @@
+.plot-tabs-holder {
+    margin-top: 20px;
+    /* space between plot tabs and page tabs */
+    color: #202020;
+    /* colour of text in tabs */
+}
+
+/*targets selected tab in plotting tabs8*/
+.plot-tabs.tab--selected {
+    background-color: #738aee !important;
+    color: #ffffff !important;
+}
+
+/* colour when hovering over selected tab */
+.plot-tabs.tab--selected:hover {
+    background-color: #738aee !important;
+}
+
+/* colour when hovering over unselected tabs */
+.plot-tabs:hover {
+    background-color: #acbbff !important;
+}
