@@ -49,6 +49,7 @@ There are two commands available to be used, `calculate-voltages` and `generate-
 ### calculate-voltages
 
 The `calculate-voltages` command is used to calculate the optimal voltages to be applied to the bimorph mirror. It will print the voltages out to the terminal and optioanlly save them in a csv file (when the `--output-path` flag is used). It accepts restrictions to the allowed voltages for the mirror, including a maximum and minimum allowed voltage and the maximum difference in voltage between adjacent actuators.
+
 The default behaviour of the analysis is to treat the first pencil beam scan as the baseline (which has not had the voltage increment applied to any actuator). This can be changed with the `--baseline-voltage-scan` flag which accepts the index (starting from 0) of the baseline pencil beam scan.
 
 It has the optional ability to only consider slit position within a certain range when performing the analysis, which can be accessed with the `--slit-range` flag.
