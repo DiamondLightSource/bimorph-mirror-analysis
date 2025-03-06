@@ -171,12 +171,28 @@ on the bimorph mirror."
         help="The index of the pencil beam scan which had no increment applied.",
         default=0,
     ),
+    slit_range: tuple[float, float] | None = typer.Option(
+        None,
+        help="The minimum and maximum\
+ values for slit positions that should be considered when performing the analysis",
+    ),
 ):
     # add trailing slash to output_dir if not present
     if output_dir[-1] != "/":
         output_dir += "/"
 
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+
+    if slit_range is not None:
+        pivoted = pivoted[  # type: ignore
+            (pivoted["slit_position_x"] >= slit_range[0])
+            & (pivoted["slit_position_x"] <= slit_range[1])  # type: ignore
+        ]
+        data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+
+    else:
+        data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
+
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
@@ -190,7 +206,6 @@ on the bimorph mirror."
         plot.save_plot(output_dir + "pencil_beam_scan_" + str(i) + ".png")
     print(f"Pencil Beam Scan plots have been saved to {output_dir}")
 
-    data: np.typing.NDArray[np.float64] = pivoted[pivoted.columns[1:]].to_numpy()  # type: ignore
     responses = np.diff(
         data, axis=1
     )  # calculate the response of each actuator by subtracting previous pencil beam
