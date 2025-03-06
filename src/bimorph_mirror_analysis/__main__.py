@@ -1,6 +1,7 @@
 """Interface for ``python -m bimorph_mirror_analysis``."""
 
 import datetime
+import os
 
 import numpy as np
 import typer
@@ -175,6 +176,10 @@ on the bimorph mirror."
     # add trailing slash to output_dir if not present
     if output_dir[-1] != "/":
         output_dir += "/"
+
+    # if dir does not exist, create it
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
     pencil_beam_scan_cols = [
