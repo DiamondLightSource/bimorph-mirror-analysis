@@ -29,9 +29,9 @@ def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
         )
         mock_find_voltage_corrections.side_effect = find_voltage_corrections
         voltages = calculate_optimal_voltages("input_file", (-1000, 1000), 500)
-        voltages = np.round(voltages, 2)
+        voltages = np.round(voltages, 1)
         # assert correct voltages calculated
-        np.testing.assert_almost_equal(voltages, np.array([72.14, 50.98, 18.59]))
+        np.testing.assert_almost_equal(voltages, np.array([72.1, 51.0, 18.6]))
 
         # assert mock was called
         mock_read_bluesky_plan_output.assert_called()
@@ -89,9 +89,9 @@ def test_calculate_optimal_voltages(
         )
 
         # assert correct voltages calculated
-        voltages = np.round(voltages, 2)
+        voltages = np.round(voltages, 1)
         np.testing.assert_almost_equal(
-            voltages, initial_voltages + expected_corrections, decimal=2
+            voltages, initial_voltages + expected_corrections, decimal=1
         )
 
 
@@ -144,6 +144,6 @@ def test_calculate_optimal_voltages_with_restrictions(
         )
 
         # assert correct voltages calculated
-        voltages = np.round(voltages, 2)
+        voltages = np.round(voltages, 1)
         mock_find_voltage_corrections_with_restraints.assert_called()
         assert check_voltages_fit_constraints(voltages, (-1000, 1000), 50)

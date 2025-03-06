@@ -87,7 +87,7 @@ pencil beam scans
         interaction_matrix_inv, desired_corrections
     )
 
-    return np.round(voltage_corrections[1:], decimals=2)  # return the voltages
+    return np.round(voltage_corrections[1:], decimals=1)  # return the voltages
 
 
 def objective_function(
@@ -232,7 +232,7 @@ pencil beam scans
         options={"maxiter": 3 * 10**5},
     )
 
-    return np.round(result.x[1:], decimals=2)  # first item is not a voltage
+    return np.round(result.x[1:], decimals=1)  # first item is not a voltage
 
 
 def check_voltages_fit_constraints(
@@ -257,7 +257,8 @@ def check_voltages_fit_constraints(
     )
 
     diffs = np.diff(voltages)
-    within_max_diff = np.all(diffs <= max_consecutive_voltage_difference)
+    # add tolerance of 0.00001 to account for floating point errors
+    within_max_diff = np.all(abs(diffs) <= max_consecutive_voltage_difference + 0.0001)
 
     # bool required as np.all returns np.bool
     return bool(within_max_and_min and within_max_diff)

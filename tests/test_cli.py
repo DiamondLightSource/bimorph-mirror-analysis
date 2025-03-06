@@ -27,7 +27,7 @@ def test_outpath_option(outpath: str | bool):
             "bimorph_mirror_analysis.__main__.calculate_optimal_voltages"
         ) as mock_calculate_optimal_voltages,
     ):
-        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+        mock_calculate_optimal_voltages.return_value = np.array([72.1, 51.0, 18.6])
         if type(outpath) is str:
             result = runner.invoke(
                 app,
@@ -60,7 +60,7 @@ def test_outpath_option(outpath: str | bool):
             baseline_voltage_scan=0,
             slit_range=None,
         )
-        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+        assert "The optimal voltages are: [72.1, 51.0, 18.6]" in result.stdout
 
 
 @pytest.mark.parametrize(
@@ -83,7 +83,7 @@ def test_human_readable_option(human_readable: str | bool):
         # Create a mock DataFrame
         mock_pivoted = MagicMock(spec=pd.DataFrame)
         mock_read_bluesky_plan_output.return_value = (mock_pivoted,)
-        mock_calculate_optimal_voltages.return_value = np.array([72.14, 50.98, 18.59])
+        mock_calculate_optimal_voltages.return_value = np.array([72.1, 51.0, 18.6])
 
         if type(human_readable) is str:
             result = runner.invoke(
@@ -118,7 +118,7 @@ def test_human_readable_option(human_readable: str | bool):
             baseline_voltage_scan=0,
             slit_range=None,
         )
-        assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+        assert "The optimal voltages are: [72.1, 51.0, 18.6]" in result.stdout
 
 
 @pytest.mark.parametrize(
@@ -185,7 +185,7 @@ def test_slit_range_option(slit_range: str | bool, raw_data_pivoted: pd.DataFram
                 baseline_voltage_scan=0,
                 slit_range=None,
             )
-            assert "The optimal voltages are: [72.14, 50.98, 18.59]" in result.stdout
+            assert "The optimal voltages are: [72.1, 51.0, 18.6]" in result.stdout
         mock_np_save.assert_called_once()
 
 
