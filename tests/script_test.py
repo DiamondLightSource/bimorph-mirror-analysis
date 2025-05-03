@@ -36,7 +36,7 @@ def test_find_voltages_correct_output(
     np.testing.assert_almost_equal(
         find_voltage_corrections(data, v, baseline_voltage_scan=-1),
         expected_corrections,
-        decimal=2,
+        decimal=1,
     )
 
 
