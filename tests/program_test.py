@@ -26,6 +26,8 @@ def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
             raw_data_pivoted,
             np.array([0.0, 0.0, 0.0]),
             100,
+            "slits-x_centre",
+            "CentroidX",
         )
         mock_find_voltage_corrections.side_effect = find_voltage_corrections
         voltages = calculate_optimal_voltages("input_file", (-1000, 1000), 500)
@@ -35,7 +37,9 @@ def test_calculate_optimal_voltages_mocked(raw_data_pivoted: pd.DataFrame):
 
         # assert mock was called
         mock_read_bluesky_plan_output.assert_called()
-        mock_read_bluesky_plan_output.assert_called_with("input_file")
+        mock_read_bluesky_plan_output.assert_called_with(
+            "input_file", detector_dimension=None
+        )
         mock_find_voltage_corrections.assert_called()
         expected_data: np.typing.NDArray[np.float64] = raw_data_pivoted[
             raw_data_pivoted.columns[1:]
@@ -83,6 +87,8 @@ def test_calculate_optimal_voltages(
             ),
             initial_voltages,
             -100,
+            "slits-x_centre",
+            "CentroidX",
         )
         voltages = calculate_optimal_voltages(
             "data", (-1000, 1000), 500, baseline_voltage_scan=-1
@@ -138,6 +144,8 @@ def test_calculate_optimal_voltages_with_restrictions(
             ),
             initial_voltages,
             -100,
+            "slits-x_centre",
+            "CentroidX",
         )
         voltages = calculate_optimal_voltages(
             "data", (-1000, 1000), 50, baseline_voltage_scan=-1

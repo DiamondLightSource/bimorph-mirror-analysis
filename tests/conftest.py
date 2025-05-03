@@ -25,8 +25,8 @@ if os.getenv("PYTEST_RAISE", "0") == "1":
 
 @pytest.fixture
 def raw_data() -> pd.DataFrame:
-    data = """voltage_channel_1,voltage_channel_2,voltage_channel_3,slit_position_x,\
-slit_width_x,slit_position_y,slit_width_y,centroid_position_x,centroid_position_y,pencil_beam_scan_number
+    data = """voltage_channel_1,voltage_channel_2,voltage_channel_3,slits-x_centre,\
+slit_width_x,slits-y_centre,slit_width_y,CentroidX,CentroidY,scan_index
     0,0,0,0.0,1,0,1,0.902155003650946,0.9059778816847021,0
     0,0,0,0.5,1,0,1,0.974760013427511,0.048632530864663126,0
     0,0,0,1.0,1,0,1,0.628935425613454,0.11203132765051338,0
@@ -120,7 +120,7 @@ slit_width_x,slit_position_y,slit_width_y,centroid_position_x,centroid_position_
 
 @pytest.fixture
 def raw_data_pivoted() -> pd.DataFrame:
-    data = """slit_position_x,pencil_beam_scan_0,pencil_beam_scan_1,pencil_beam_scan_2\
+    data = """slits-x_centre,pencil_beam_scan_0,pencil_beam_scan_1,pencil_beam_scan_2\
 ,pencil_beam_scan_3
     0.0,0.902155003650946,0.5546590484621201,0.7233918949216122,0.232850273843354
     0.5,0.974760013427511,0.1390666211695935,0.290742792709767,0.3942270734759074

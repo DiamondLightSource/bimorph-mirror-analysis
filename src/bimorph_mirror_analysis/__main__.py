@@ -15,7 +15,10 @@ from bimorph_mirror_analysis.plots import (
     MirrorSurfacePlot,
     PencilBeamScanPlot,
 )
-from bimorph_mirror_analysis.read_file import read_bluesky_plan_output
+from bimorph_mirror_analysis.read_file import (
+    DetectorDimension,
+    read_bluesky_plan_output,
+)
 
 from . import __version__
 
@@ -53,10 +56,20 @@ If the --human-readable flag is not supplied, the table is not saved.",
         help="The minimum and maximum\
  values for slit positions that should be considered when performing the analysis",
     ),
+    detector_dimension: str | None = typer.Option(
+        None, help="The dimension of the detector to be optimised in the analysis"
+    ),
 ):
+    if detector_dimension is not None:
+        detector_dimension_enum = DetectorDimension[detector_dimension.upper()]
+    else:
+        detector_dimension_enum = None
+
     file_type = file_path.split(".")[-1]
     if human_readable is not None:
-        pivoted, *_ = read_bluesky_plan_output(file_path)
+        pivoted, *_ = read_bluesky_plan_output(
+            file_path, detector_dimension=detector_dimension_enum
+        )
         pivoted.to_csv(human_readable)
         print(f"The human-readable file has been written to {human_readable}")
 
@@ -66,6 +79,7 @@ If the --human-readable flag is not supplied, the table is not saved.",
         max_consecutive_voltage_difference=max_consecutive_voltage_difference,
         baseline_voltage_scan=baseline_voltage_scan,
         slit_range=slit_range,
+        detector_dimension=detector_dimension_enum,
     )
     optimal_voltages = np.round(optimal_voltages, 2)
     date = datetime.datetime.now().date()
@@ -91,6 +105,7 @@ def calculate_optimal_voltages(
     max_consecutive_voltage_difference: int,
     baseline_voltage_scan: int = 0,
     slit_range: tuple[float, float] | None = None,
+    detector_dimension: DetectorDimension | None = None,
 ) -> np.typing.NDArray[np.float64]:
     """Calculate the optimal voltages for the bimorph mirror actuators.
 
@@ -105,12 +120,14 @@ def calculate_optimal_voltages(
     Returns:
         The optimal voltages for the bimorph mirror actuators.
     """
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment, slit_position_column, _ = (
+        read_bluesky_plan_output(file_path, detector_dimension=detector_dimension)
+    )
 
     if slit_range is not None:
         pivoted_in_range = pivoted[  # type: ignore
-            (pivoted["slit_position_x"] >= slit_range[0])
-            & (pivoted["slit_position_x"] <= slit_range[1])  # type: ignore
+            (pivoted[slit_position_column] >= slit_range[0])
+            & (pivoted[slit_position_column] <= slit_range[1])  # type: ignore
         ]
         data = pivoted_in_range[pivoted_in_range.columns[1:]].to_numpy()  # type: ignore
 
@@ -171,17 +188,30 @@ on the bimorph mirror."
         help="The index of the pencil beam scan which had no increment applied.",
         default=0,
     ),
+    detector_dimension: str | None = typer.Option(
+        None, help="The dimension of the detector to be optimised in the analysis"
+    ),
 ):
+    if detector_dimension is not None:
+        detector_dimension_enum = DetectorDimension[detector_dimension.upper()]
+    else:
+        detector_dimension_enum = None
     # add trailing slash to output_dir if not present
     if output_dir[-1] != "/":
         output_dir += "/"
 
-    pivoted, initial_voltages, increment = read_bluesky_plan_output(file_path)
+    pivoted, initial_voltages, increment, slit_position_column, _ = (
+        read_bluesky_plan_output(
+            file_path,
+            baseline_voltage_scan_index=baseline_voltage_scan,
+            detector_dimension=detector_dimension_enum,
+        )
+    )
     pencil_beam_scan_cols = [
         col for col in pivoted.columns if "pencil_beam_scan" in col
     ]
     slit_positions: np.typing.NDArray[np.float64] = pivoted[
-        "slit_position_x"
+        slit_position_column
     ].to_numpy()  # type: ignore
 
     for col in pencil_beam_scan_cols:
@@ -194,10 +224,10 @@ on the bimorph mirror."
     responses = np.diff(
         data, axis=1
     )  # calculate the response of each actuator by subtracting previous pencil beam
-    interation_matrix = responses / increment  # response per unit charge
+    interaction_matrix = responses / increment  # response per unit charge
 
     for actuator_num in range(responses.shape[1]):
-        centroids = interation_matrix[:, actuator_num]
+        centroids = interaction_matrix[:, actuator_num]
         plot = InfluenceFunctionPlot(slit_positions, centroids, actuator_num)
         plot.save_plot(output_dir + f"actuator_{actuator_num}_influence_function.png")
     print(f"influence function plots have been saved to {output_dir}")
@@ -216,10 +246,10 @@ on the bimorph mirror."
         baseline_voltage_scan=baseline_voltage_scan,
     )
     unrestrained_centroid_corrections = np.matmul(
-        interation_matrix, unrestrained_voltage_corrections
+        interaction_matrix, unrestrained_voltage_corrections
     )
     restrained_centroid_corrections = np.matmul(
-        interation_matrix, restrained_voltage_corrections
+        interaction_matrix, restrained_voltage_corrections
     )
 
     baseline_centroids = pivoted[f"pencil_beam_scan_{baseline_voltage_scan}"].to_numpy()  # type: ignore
